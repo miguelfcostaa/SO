@@ -3,7 +3,6 @@
 //2105319 Ines Jardim
 
 #include "config.h"
-#include "unix.h"
 
 void lerficheiro(){
 	FILE *fp;
