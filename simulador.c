@@ -21,7 +21,7 @@ void lerficheiro(){
 	fclose(fp);
 }
 
-void socket(){
+void socketsimulador(){
 	int sockfd, newsockfd, clilen, childpid, servlen;
 	struct sockaddr_un cli_addr, serv_addr;
 
@@ -58,6 +58,7 @@ void socket(){
 void main(){
 
 	lerficheiro();
+	socketsimulador();
 
 }
 
