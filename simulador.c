@@ -3,6 +3,7 @@
 //2105319 Ines Jardim
 
 #include "config.h"
+#include "unix.h"
 
 void lerficheiro(){
 	FILE *fp;
@@ -38,7 +39,7 @@ void socket(){
 		err_dump("server, can't bind local address");
 
 	listen(sockfd, 5);
-	
+
 	for (;;) {
 		clilen = sizeof(cli_addr);
 		newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,&clilen);

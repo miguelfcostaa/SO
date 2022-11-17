@@ -3,6 +3,7 @@
 //2105319 Ines Jardim
 
 #include "config.h"
+#include "unix.h"
 
 void escrever(){
 	char String[100];
