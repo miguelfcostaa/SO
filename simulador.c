@@ -66,7 +66,6 @@ void enviarMensagem(char *mensagemNova) {
 
 
 
-
 void main(){
 
 	lerficheiro();
