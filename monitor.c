@@ -116,10 +116,10 @@ void escreveFeedback() {
 
 void imprimeFeedback(){
 	if (!acabouSimulacao) {
-        fprintf(fp, "%s", "Estado atual => Simulacao a decorrer!\n");
+        fprintf("%s", "Estado atual => Simulacao a decorrer!\n");
     } 
 	else {
-    	fprintf(fp, "%s", "Estado atual => Simulacao acabou!\n");
+    	fprintf("%s", "Estado atual => Simulacao acabou!\n");
     }
 	printf("DIA %d\n", nDia);
 	printf("\n");
