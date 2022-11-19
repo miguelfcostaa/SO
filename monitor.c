@@ -9,23 +9,7 @@ int numeroPessoas = 0, numeroDiasPassados = 1, tempoMedioEspera = 0, tamanhoFila
     numeroMortos = 0, casosRecuperados = 0, doentesNoHospital = 0, medicosDisponiveis = 0, numeroPessoasTestadasNosCentros = 0, somaTemposEspera = 0;
 
 
-void escrever(sockfd){
-	char String[100];
-	FILE *fp;
 
-	fp = fopen("feedback.txt","a");
-	if (fp == NULL){
-		printf("Ocorreu um erro ao abrir o ficheiro\n");
-	}
-	else {
-		printf("Ficheiro carregado com sucesso\n");
-	}
-	
-	strcpy(String,"Linha de teste");
-	fputs(String, fp);
-	fclose(fp);
-
-}
 
 
 void socketservidor() {
@@ -194,7 +178,7 @@ void trataMensagem(char mensagem[]) {
 }
 
 int main(int argc, char *argv[]) {
-	
+
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	printf("1 - Ligar Discoteca               \n");
 	printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
