@@ -1,4 +1,3 @@
-
 #include <ctype.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -32,11 +31,11 @@ struct pessoa
 void lerficheiro();
 int criaSocket();
 void enviarMensagem(char *mensagemNova);
-void main();
+int probabilidade (float valor);
+int randomNumber(int max, int min);
 
 //monitor.c
 void escrever(sockfd);
 void socketservidor();
 void leituraSocket(int sockfd);
 void trataMensagem(char mensagem[]);
-int main(int argc, char *argv[]);

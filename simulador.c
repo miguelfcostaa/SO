@@ -64,11 +64,21 @@ void enviarMensagem(char *mensagemNova) {
     }
 }
 
+//<<<<<<<<<<<<<<<<<<<<<<<< F.AUX >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+int probabilidade (float valor) {
+	return (rand() % 100) > (valor * 100);
+}
+
+int randomNumber(int max, int min) {
+	return rand() % (max + 1 - min) + min;
+}
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 void main(){
 
-	lerficheiro();
+	//lerficheiro();
 	criaSocket();
 
 }

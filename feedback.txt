@@ -1,13 +1,23 @@
-Ola
-o
-meu
-nome
-e
-Miguel
-e
-estamos
-a
-estudar
-sistemas
-operativos
-Linha de teste
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Estado atual -> Simulacao a decorrer
+                DIA 1
+                
+Pessoas (total): 19
+Pessoas a espera na fila 1: 3
+Pessoas a espera na fila 2: 4
+Pessoas na zona A: 5
+Pessoas na fila para a zona A: 12
+Pessoas na zona B: 6
+Pessoas na fila para a zona B: 5
+Pessoas na Padaria: 1
+Pessoas na fila da padaria: 9
+Tempo medio de espera (minutos): 4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+
+
+

@@ -195,18 +195,16 @@ void trataMensagem(char mensagem[]) {
 
 int main(int argc, char *argv[]) {
 	
-
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	printf("1 - Ligar Discoteca               \n");
 	printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 	int opcao = 0;
-	int n = [0,2,3,4,5,6,7,8,9];
 	while (opcao != 1) {
         printf("Opcao: ");
         scanf("%d", &opcao); // Le valor introduzido
 		switch (opcao)
 		{
-		case n:
+		case 0:
 			printf("erro: opcao invalida");
 			break;
 		case 1:
