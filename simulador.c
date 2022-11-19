@@ -21,44 +21,61 @@ void lerficheiro(){
 	fclose(fp);
 }
 
-void socketsimulador(){
-	int sockfd, newsockfd, clilen, childpid, servlen;
-	struct sockaddr_un cli_addr, serv_addr;
+void str_cliente(int sockfd){
+	int n;
+	FILE* fp;
+	char sendline[MAXLINE], recvline[MAXLINE+1];
 
-	if ((sockfd = socket(AF_UNIX,SOCK_STREAM,0)) < 0)
-		err_dump("server: can't open stream socket");
+	fp = fopen("feedback.txt","r");
 
-	bzero((char *)&serv_addr, sizeof(serv_addr));
+	while (fgets(sendline, MAXLINE, fp) != NULL) {
+
+		n = strlen(sendline);
+		if (writen(sockfd, sendline, n) != n)
+			err_dump("str_cli: writen error on socket");
+
+		/* Tenta ler string de sockfd. Note-se que tem de 
+		   terminar a string com \0 */
+
+		n = readline(sockfd, recvline, MAXLINE);
+		if (n<0)
+			err_dump("str_cli:readline error");
+		recvline[n] = 0;
+
+		fputs(recvline, stdout);
+	}
+	if (ferror(fp))
+		err_dump("str_cli: error reading file");
+}
+
+void socketcliente(){
+	struct sockaddr_un serv_addr;
+	int servlen;
+
+	if ((sockfd= socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
+		err_dump("client: can't open stream socket");
+
+	bzero((char *) &serv_addr, sizeof(serv_addr));
+	
 	serv_addr.sun_family = AF_UNIX;
 	strcpy(serv_addr.sun_path, UNIXSTR_PATH);
-
 	servlen = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
-	unlink(UNIXSTR_PATH);
-	if (bind(sockfd, (struct sockaddr *) &serv_addr, servlen) < 0)
-		err_dump("server, can't bind local address");
 
-	listen(sockfd, 5);
+	if (connect(sockfd, (struct sockaddr *) &serv_addr, servlen) < 0)
+		err_dump("client: can't connect to server");
 
-	for (;;) {
-		clilen = sizeof(cli_addr);
-		newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,&clilen);
-		if (newsockfd < 0)
-			err_dump("server: accept error");
-		if ((childpid = fork()) < 0)
-			err_dump("server: fork error");
-		else if (childpid == 0) {
-			close(sockfd);
-			str_echo(newsockfd);
-			exit(0);
-		}
-		close(newsockfd);
-	}
+	str_cliente(sockfd);
+
+	close(sockfd);
+	exit(0);
 }
+
+
 
 void main(){
 
 	lerficheiro();
-	socketsimulador();
+	socketcliente();
 
 }
 
