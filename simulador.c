@@ -3,34 +3,12 @@
 
 #include "config.h"
 
-void imprimeFeedback(){
-	if (!acabouSimulacao) {
-        fprintf(fp, "%s", "Estado atual => Simulacao a decorrer!\n");
-    } 
-	else {
-    	fprintf(fp, "%s", "Estado atual => Simulacao acabou!\n");
-    }
-	printf(fp, "DIA %d\n", numeroDia);
-	printf(fp, "\n");
-	printf(fp, "Pessoas (total): %d\n", nPessoasTotal);
-	printf(fp, "Pessoas a espera na fila 1: %d\n", nPessoasFila1);
-	printf(fp, "Pessoas a espera na fila 2: %d\n", nPessoasFila2);
-	printf(fp, "Pessoas na zona A: %d\n", nPessoasZonaA);
-	printf(fp, "Pessoas na fila para a zona A: %d\n", nPessoasFilaA);
-	printf(fp, "Pessoas na zona B: %d\n", nPessoasZonaB);
-	printf(fp, "Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
-	printf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
-	printf(fp, "Tempo medio de espera (minutos): %d\n", tempoMedio);	
-	printf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
-}
-
-int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZonaA = 0, nPessoasFilaA = 0, nPessoasZonaB = 0
-, nPessoasFilaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
-
-
 int sockfd = 0; // inicia socket
 int acabouSimulacao = FALSE;
+
+int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZonaA = 0, nPessoasFilaA = 0, nPessoasZonaB = 0,
+ nPessoasFilaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
+
 
 void lerficheiro(){
 	FILE *fp;
