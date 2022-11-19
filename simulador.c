@@ -1,3 +1,4 @@
+
 //2079120 Miguel Costa
 //2105319 Ines Jardim
 
@@ -26,8 +27,8 @@ int criaSocket() {
     struct sockaddr_un serv_end;
     int server_size;
 
-    // Criar o socket
-    sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+	// Cria o socket
+    sockfd = socket(AF_UNIX, SOCK_STREAM, 0); 
     if (sockfd < 0) {
         printf("erro: nao foi possivel criar o socket. \n");
     }

@@ -3,8 +3,6 @@
 
 #include "config.h"
 
-char SEPARADOR[] = "++++++++++++++++++++++++++++++++++++++++++++\n";
-
 int fimSimulacao = FALSE;
 
 int numeroPessoas = 0, numeroDiasPassados = 1, tempoMedioEspera = 0, tamanhoFilaCentro1 = 0, numeroPessoasEmIsolamento = 0, tamanhoFilaCentro2 = 0, casosPositivosTotal = 0, casosPositivosAtivos = 0, casosEmEstudo = 0,
@@ -33,8 +31,8 @@ void escrever(sockfd){
 void socketservidor() {
     // sockfd -> criacao para a primeira comunicacao
     // novoSocket -> criacao para a segunda comunicacao
-    int sockfd, novoSocket, tamanhoCliente, tamanhoServidor;
-    struct sockaddr_un end_cli, serv_addr;
+    int sockfd, novoSocket, tamanhoCliente, server_size;
+    struct sockaddr_un serv_end, serv_addr;
 
     // Verifica a criacao do socket
     if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
@@ -45,11 +43,11 @@ void socketservidor() {
     bzero((char *)&serv_addr, sizeof(serv_addr));
     serv_addr.sun_family = AF_UNIX;
     strcpy(serv_addr.sun_path, UNIXSTR_PATH);
-    tamanhoServidor = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
+    server_size = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
     unlink(UNIXSTR_PATH);
 
     // Liga o socket a um endereco
-    if (bind(sockfd, (struct sockaddr *)&serv_addr, tamanhoServidor) < 0) {
+    if (bind(sockfd, (struct sockaddr *)&serv_addr, server_size) < 0) {
         printf("Erro a ligar o socket a um endereco\n");
     }
 
@@ -58,8 +56,8 @@ void socketservidor() {
     listen(sockfd, 1);
 
     // Criacao de um novo scoket
-    tamanhoCliente = sizeof(end_cli);
-    novoSocket = accept(sockfd, (struct sockaddr *)&end_cli, &tamanhoCliente);
+    tamanhoCliente = sizeof(serv_end);
+    novoSocket = accept(sockfd, (struct sockaddr *)&serv_end, &tamanhoCliente);
     if (novoSocket < 0) {
         printf("Erro na aceitacao \n");
     } // Verifica o erro na aceitacao da ligacao
@@ -79,17 +77,18 @@ void socketservidor() {
 
 void leituraSocket(int sockfd) {
     int numero = 0;
-    char buffer[TAMANHO_LINHA];
+    char buffer[MAXLINE];
     while (!fimSimulacao) {
-        numero = read(sockfd, buffer,
-                      TAMANHO_LINHA); // Le a mensagem do socket e guarda no buffer
+        numero = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
         if (numero == 0) {            // Quando chega ao fim
-            // printf("FIM");
+            printf("FIM");
             break;
-        } else if (numero < 0) {
-            printf("Erro: Nao leu do socket \n");
-        } else {
-            // printf("Mensagem Recebida");
+        } 
+		else if (numero < 0) {
+            printf("erro: nao foi possivel ler o socket. \n");
+        } 
+		else {
+            printf("Mensagem Recebida");
             trataMensagem(buffer);
         }
     }
@@ -97,7 +96,7 @@ void leituraSocket(int sockfd) {
 
 void trataMensagem(char mensagem[]) {
     // Auxiliario
-    char bufferAuxiliario[TAMANHO_LINHA];
+    char bufferAuxiliario[MAXLINE];
     strcpy(bufferAuxiliario, mensagem);
     char mensagensSeparadas[15][30];
     char valoresSeparados[3][30];
@@ -195,7 +194,7 @@ void trataMensagem(char mensagem[]) {
 }
 
 int main(int argc, char *argv[]) {
-	socketservidor();
+	
 
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	printf("1 - Ligar Discoteca               \n");
@@ -204,9 +203,16 @@ int main(int argc, char *argv[]) {
 	while (opcao != 1) {
         printf("Opcao: ");
         scanf("%d", &opcao); // Le valor introduzido
-		if (opcao != 1){
-			printf("Opcao invalida.");
-			opcao = 0;
+		switch (opcao)
+		{
+		case 0:
+			printf("erro: opcao invalida");
+			break;
+		case 1:
+			socketservidor();
+			break;
+		default:
+			break;
 		}
 	}
 }
