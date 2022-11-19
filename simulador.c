@@ -70,8 +70,6 @@ void socketcliente(){
 	exit(0);
 }
 
-
-
 void main(){
 
 	lerficheiro();
