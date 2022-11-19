@@ -32,20 +32,20 @@ void str_cliente(int sockfd){
 
 		n = strlen(sendline);
 		if (writen(sockfd, sendline, n) != n)
-			err_dump("str_cli: writen error on socket");
+			printf("str_cli: writen error on socket");
 
 		/* Tenta ler string de sockfd. Note-se que tem de 
 		   terminar a string com \0 */
 
 		n = readline(sockfd, recvline, MAXLINE);
 		if (n<0)
-			err_dump("str_cli:readline error");
+			printf("str_cli:readline error");
 		recvline[n] = 0;
 
 		fputs(recvline, stdout);
 	}
 	if (ferror(fp))
-		err_dump("str_cli: error reading file");
+		printf("str_cli: error reading file");
 }
 
 void socketcliente(){
@@ -53,7 +53,7 @@ void socketcliente(){
 	int servlen;
 
 	if ((sockfd= socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
-		err_dump("client: can't open stream socket");
+		printf("client: can't open stream socket");
 
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	
@@ -62,7 +62,7 @@ void socketcliente(){
 	servlen = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
 
 	if (connect(sockfd, (struct sockaddr *) &serv_addr, servlen) < 0)
-		err_dump("client: can't connect to server");
+		printf("client: can't connect to server");
 
 	str_cliente(sockfd);
 

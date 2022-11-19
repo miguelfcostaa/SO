@@ -27,7 +27,7 @@ void socketservidor(){
 	struct sockaddr_un cli_addr, serv_addr;
 
 	if ((sockfd = socket(AF_UNIX,SOCK_STREAM,0)) < 0)
-		err_dump("server: can't open stream socket");
+		printf("server: can't open stream socket");
 
 	bzero((char *)&serv_addr, sizeof(serv_addr));
 	serv_addr.sun_family = AF_UNIX;
@@ -37,7 +37,7 @@ void socketservidor(){
 	unlink(UNIXSTR_PATH);
 
 	if (bind(sockfd, (struct sockaddr *) &serv_addr, servlen) < 0)
-		err_dump("server, can't bind local address");
+		printf("server, can't bind local address");
 	
 	printf("Esperar Simulador \n");
 	listen(sockfd, 5);
@@ -46,10 +46,10 @@ void socketservidor(){
 	clilen = sizeof(cli_addr);
 	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr,&clilen);
 	if (newsockfd < 0)
-		err_dump("server: accept error");
+		printf("server: accept error");
 	
 	if ((childpid = fork()) < 0)
-		err_dump("server: fork error");
+		printf("server: fork error");
 	
 	else if (childpid == 0) {
 		close(sockfd);
