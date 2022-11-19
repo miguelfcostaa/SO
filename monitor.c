@@ -190,7 +190,7 @@ void trataMensagem(char mensagem[]) {
             }
         }
     }
-    imprimirInformacao();
+    //imprimirInformacao();
 }
 
 int main(int argc, char *argv[]) {

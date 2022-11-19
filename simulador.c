@@ -1,4 +1,3 @@
-
 //2079120 Miguel Costa
 //2105319 Ines Jardim
 
@@ -53,10 +52,10 @@ int criaSocket() {
     return sockfd;
 }
 
-void enviarMensagem(char *mensagemAEnviar) // envia mensagem po monitor
-{
+// Envia mensagens para o monitor
+void enviarMensagem(char *mensagemAEnviar) {
     int numero;
-    char mensagem[TAMANHO_LINHA];
+    char mensagem[MAXLINE];
     if (strcpy(mensagem, mensagemAEnviar) != 0) {
         numero = strlen(mensagem) + 1;
         if (write(sockfd, mensagem, numero) != numero) {
