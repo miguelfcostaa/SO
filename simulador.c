@@ -53,10 +53,10 @@ int criaSocket() {
 }
 
 // Envia mensagens para o monitor
-void enviarMensagem(char *mensagemAEnviar) {
+void enviarMensagem(char *mensagemNova) {
     int numero;
     char mensagem[MAXLINE];
-    if (strcpy(mensagem, mensagemAEnviar) != 0) {
+    if (strcpy(mensagem, mensagemNova) != 0) {
         numero = strlen(mensagem) + 1;
         if (write(sockfd, mensagem, numero) != numero) {
             printf("erro: nao foi possivel escrever. \n");

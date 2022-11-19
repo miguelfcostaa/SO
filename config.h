@@ -27,3 +27,16 @@ struct pessoa
     /* data */
     
 };
+
+//simulador.c
+void lerficheiro();
+int criaSocket();
+void enviarMensagem(char *mensagemNova);
+void main();
+
+//monitor.c
+void escrever(sockfd);
+void socketservidor();
+void leituraSocket(int sockfd);
+void trataMensagem(char mensagem[]);
+int main(int argc, char *argv[]);
