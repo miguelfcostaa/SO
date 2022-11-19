@@ -3,13 +3,10 @@
 
 #include "config.h"
 
-int fimSimulacao = FALSE;
+int acabouSimulacao = FALSE;
 
-int numeroPessoas = 0, numeroDiasPassados = 1, tempoMedioEspera = 0, tamanhoFilaCentro1 = 0, numeroPessoasEmIsolamento = 0, tamanhoFilaCentro2 = 0, casosPositivosTotal = 0, casosPositivosAtivos = 0, casosEmEstudo = 0,
-    numeroMortos = 0, casosRecuperados = 0, doentesNoHospital = 0, medicosDisponiveis = 0, numeroPessoasTestadasNosCentros = 0, somaTemposEspera = 0;
-
-
-
+int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZonaA = 0, nPessoasFilaA = 0, nPessoasZonaB = 0,
+ nPessoasFilaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
 
 
 void socketservidor() {
@@ -174,8 +171,70 @@ void trataMensagem(char mensagem[]) {
             }
         }
     }
-    //imprimirInformacao();
+    imprimeFeedback();
 }
+
+//>>>>>>>>>>>>>>>>>>>>>> ESCRITA E IMPRESSAO >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+void limpaFeedback() {
+	fclose(fopen("feedback.txt", "w"));
+}
+
+void escreveFeedback() {
+	limpaFeedback();
+	FILE *fp;
+	fp = fopen("feedback.txt","a");
+
+	if (fp == NULL){
+		printf("Ocorreu um erro ao abrir o ficheiro\n");
+	}
+	else {
+		if (!acabouSimulacao) {
+            fprintf(fp, "%s", "Estado atual => Simulacao a decorrer!\n");
+        } 
+		else {
+            fprintf(fp, "%s", "Estado atual => Simulacao acabou!\n");
+        }
+		fprintf(fp, "DIA %d\n", numeroDia);
+		fprintf(fp, "\n");
+		fprintf(fp, "Pessoas (total): %d\n", nPessoasTotal);
+		fprintf(fp, "Pessoas a espera na fila 1: %d\n", nPessoasFila1);
+		fprintf(fp, "Pessoas a espera na fila 2: %d\n", nPessoasFila2);
+		fprintf(fp, "Pessoas na zona A: %d\n", nPessoasZonaA);
+		fprintf(fp, "Pessoas na fila para a zona A: %d\n", nPessoasFilaA);
+		fprintf(fp, "Pessoas na zona B: %d\n", nPessoasZonaB);
+		fprintf(fp, "Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
+		fprintf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
+		fprintf(fp, "Tempo medio de espera (minutos): %d\n", tempoMedio);
+		fprintf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		fclose(fp);
+	}
+}
+
+void imprimeFeedback(){
+	if (!acabouSimulacao) {
+        fprintf(fp, "%s", "Estado atual => Simulacao a decorrer!\n");
+    } 
+	else {
+    	fprintf(fp, "%s", "Estado atual => Simulacao acabou!\n");
+    }
+	printf(fp, "DIA %d\n", nDia);
+	printf(fp, "\n");
+	printf(fp, "Pessoas (total): %d\n", nPessoasTotal);
+	printf(fp, "Pessoas a espera na fila 1: %d\n", nPessoasFila1);
+	printf(fp, "Pessoas a espera na fila 2: %d\n", nPessoasFila2);
+	printf(fp, "Pessoas na zona A: %d\n", nPessoasZonaA);
+	printf(fp, "Pessoas na fila para a zona A: %d\n", nPessoasFilaA);
+	printf(fp, "Pessoas na zona B: %d\n", nPessoasZonaB);
+	printf(fp, "Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
+	printf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
+	printf(fp, "Tempo medio de espera (minutos): %d\n", tempoMedio);	
+	printf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	escreveFeedback();
+}
+
+
+
 
 int main(int argc, char *argv[]) {
 
