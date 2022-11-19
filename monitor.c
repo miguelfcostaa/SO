@@ -59,7 +59,7 @@ void socketservidor() {
 void leituraSocket(int sockfd) {
     int numero = 0;
     char buffer[MAXLINE];
-    while (!fimSimulacao) {
+    while (!acabouSimulacao) {
         numero = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
         if (numero == 0) {            // Quando chega ao fim
             printf("FIM");
@@ -75,104 +75,7 @@ void leituraSocket(int sockfd) {
     }
 }
 
-void trataMensagem(char mensagem[]) {
-    // Auxiliario
-    char bufferAuxiliario[MAXLINE];
-    strcpy(bufferAuxiliario, mensagem);
-    char mensagensSeparadas[15][30];
-    char valoresSeparados[3][30];
-    int index = 0;
-    int indexMensagem = 0;
-    int i = 0;
-    int numeroMensagens = 0;
-    char *p = strtok(bufferAuxiliario, "/");
 
-    while (p != NULL) {
-        strcpy(mensagensSeparadas[numeroMensagens++], p);
-        p = strtok(NULL, "/");
-    }
-
-    // Obtem o head da lista ligada que se obtem separando bufferAuxiliario por
-    // "_"
-    while (indexMensagem < numeroMensagens) {
-        index = 0;
-        char *auxiliario = strtok(mensagensSeparadas[indexMensagem], "_");
-        indexMensagem++;
-
-        // Ciclo que percorre e vai separando pelos - e copiando para
-        // valoresSeparados[i]
-        while (auxiliario != NULL) {
-            strcpy(valoresSeparados[index++], auxiliario);
-            auxiliario = strtok(NULL, "_");
-        }
-
-        // Onde vai guardar os valores depois da divisao
-        int acontecimento = strtol(valoresSeparados[1], NULL, 10);
-        if (!strcmp(valoresSeparados[0], "Z") && !strcmp(valoresSeparados[2], "Z")) {
-            if (acontecimento ==1) {
-                fimSimulacao = TRUE;
-            }
-        } else {
-            int numero;
-            if (strcmp(valoresSeparados[0], "Z")) {
-                numero = strtol(valoresSeparados[0], NULL, 10);
-            } else {
-                numero = -1;
-            }
-            int especificacaoAcontecimento;
-            if (strcmp(valoresSeparados[2], "Z")) {
-                especificacaoAcontecimento = strtol(valoresSeparados[2], NULL, 10);
-            } else {
-                especificacaoAcontecimento = -1;
-            }
-            switch (acontecimento) {
-            case 0: // Pessoa chegou à fila de um centro.
-                // numeroPessoas++;
-                if (especificacaoAcontecimento == 1) {
-                    tamanhoFilaCentro1 = numero;
-                } else {
-                    tamanhoFilaCentro2 = numero;
-                }
-                break;
-            case 1:
-                casosPositivosAtivos = numero;
-                break;
-            case 2:
-                casosPositivosTotal = numero;
-                // printf("%s\n",mensagensSeparadas[indexMensagem]);
-                break;
-            case 3:
-                casosEmEstudo = numero;
-                break;
-            case 4:
-                numeroPessoasEmIsolamento = numero;
-                break;
-            case 5:
-                numeroPessoas = numero;
-                break;
-            case 6:
-                doentesNoHospital = numero;
-                break;
-            case 7:
-                tempoMedioEspera = numero;
-                break;
-            case 8:
-                casosRecuperados = numero;
-                break;
-            case 9:
-                numeroMortos = numero;
-                break;
-            case 10: // Passou um dia na simulação
-                numeroDiasPassados++;
-                break;
-            case 11: // Medico criado
-                medicosDisponiveis = numero;
-                break;
-            }
-        }
-    }
-    imprimeFeedback();
-}
 
 //>>>>>>>>>>>>>>>>>>>>>> ESCRITA E IMPRESSAO >>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -195,7 +98,7 @@ void escreveFeedback() {
 		else {
             fprintf(fp, "%s", "Estado atual => Simulacao acabou!\n");
         }
-		fprintf(fp, "DIA %d\n", numeroDia);
+		fprintf(fp, "DIA %d\n", nDia);
 		fprintf(fp, "\n");
 		fprintf(fp, "Pessoas (total): %d\n", nPessoasTotal);
 		fprintf(fp, "Pessoas a espera na fila 1: %d\n", nPessoasFila1);
@@ -218,18 +121,18 @@ void imprimeFeedback(){
 	else {
     	fprintf(fp, "%s", "Estado atual => Simulacao acabou!\n");
     }
-	printf(fp, "DIA %d\n", nDia);
-	printf(fp, "\n");
-	printf(fp, "Pessoas (total): %d\n", nPessoasTotal);
-	printf(fp, "Pessoas a espera na fila 1: %d\n", nPessoasFila1);
-	printf(fp, "Pessoas a espera na fila 2: %d\n", nPessoasFila2);
-	printf(fp, "Pessoas na zona A: %d\n", nPessoasZonaA);
-	printf(fp, "Pessoas na fila para a zona A: %d\n", nPessoasFilaA);
-	printf(fp, "Pessoas na zona B: %d\n", nPessoasZonaB);
-	printf(fp, "Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
-	printf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
-	printf(fp, "Tempo medio de espera (minutos): %d\n", tempoMedio);	
-	printf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	printf("DIA %d\n", nDia);
+	printf("\n");
+	printf("Pessoas (total): %d\n", nPessoasTotal);
+	printf("Pessoas a espera na fila 1: %d\n", nPessoasFila1);
+	printf("Pessoas a espera na fila 2: %d\n", nPessoasFila2);
+	printf("Pessoas na zona A: %d\n", nPessoasZonaA);
+	printf("Pessoas na fila para a zona A: %d\n", nPessoasFilaA);
+	printf("Pessoas na zona B: %d\n", nPessoasZonaB);
+	printf("Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
+	printf("Pessoas na Padaria: %d\n", nPessoasPadaria);
+	printf("Tempo medio de espera (minutos): %d\n", tempoMedio);	
+	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	escreveFeedback();
 }
 
@@ -257,4 +160,6 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 	}
+	escreveFeedback();
+	return 0;
 }
