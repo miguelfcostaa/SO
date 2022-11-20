@@ -21,21 +21,16 @@
 #define FALSE 0
 
 
-struct pessoa
-{
-    /* data */
-    
-};
-
 //simulador.c
 void lerficheiro();
 int criaSocket();
-void enviarMensagem(char *mensagemNova);
 int probabilidade (float valor);
 int randomNumber(int max, int min);
 
+
 //monitor.c
-void escrever(sockfd);
 void socketservidor();
 void leituraSocket(int sockfd);
-void trataMensagem(char mensagem[]);
+void limpaFeedback();
+void escreveFeedback();
+void imprimeFeedback();
