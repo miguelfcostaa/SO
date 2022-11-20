@@ -62,7 +62,7 @@ void leituraSocket(int sockfd) {
     while (!acabouSimulacao) {
         numero = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
         if (numero == 0) {            // Quando chega ao fim
-            printf("FIM");
+            //printf("FIM");
             break;
         } 
 		else if (numero < 0) {
@@ -70,7 +70,7 @@ void leituraSocket(int sockfd) {
         } 
 		else {
             printf("Mensagem Recebida");
-            trataMensagem(buffer);
+            //trataMensagem(buffer);
         }
     }
 }
@@ -98,8 +98,7 @@ void escreveFeedback() {
 		else {
             fprintf(fp, "%s", "Estado atual => Simulacao acabou!\n");
         }
-		fprintf(fp, "DIA %d\n", nDia);
-		fprintf(fp, "\n");
+		fprintf(fp, "\t DIA %d\n", nDia);
 		fprintf(fp, "Pessoas (total): %d\n", nPessoasTotal);
 		fprintf(fp, "Pessoas a espera na fila 1: %d\n", nPessoasFila1);
 		fprintf(fp, "Pessoas a espera na fila 2: %d\n", nPessoasFila2);
@@ -109,20 +108,19 @@ void escreveFeedback() {
 		fprintf(fp, "Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
 		fprintf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
 		fprintf(fp, "Tempo medio de espera (minutos): %d\n", tempoMedio);
-		fprintf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		fprintf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 		fclose(fp);
 	}
 }
 
 void imprimeFeedback(){
 	if (!acabouSimulacao) {
-        fprintf("%s", "Estado atual => Simulacao a decorrer!\n");
+        printf("%s", "Estado atual => Simulacao a decorrer!\n");
     } 
 	else {
-    	fprintf("%s", "Estado atual => Simulacao acabou!\n");
+    	printf("%s", "Estado atual => Simulacao acabou!\n");
     }
-	printf("DIA %d\n", nDia);
-	printf("\n");
+	printf("\t DIA %d\n", nDia);
 	printf("Pessoas (total): %d\n", nPessoasTotal);
 	printf("Pessoas a espera na fila 1: %d\n", nPessoasFila1);
 	printf("Pessoas a espera na fila 2: %d\n", nPessoasFila2);
@@ -132,7 +130,7 @@ void imprimeFeedback(){
 	printf("Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
 	printf("Pessoas na Padaria: %d\n", nPessoasPadaria);
 	printf("Tempo medio de espera (minutos): %d\n", tempoMedio);	
-	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	escreveFeedback();
 }
 
@@ -141,17 +139,17 @@ void imprimeFeedback(){
 
 int main(int argc, char *argv[]) {
 
-	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-	printf("1 - Ligar Discoteca               \n");
-	printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	printf("~~~~~~~~~~~~~~~~~~~~~~\n");
+	printf("1 - Começar simulacao \n");
+	printf("~~~~~~~~~~~~~~~~~~~~~~\n");
 	int opcao = 0;
 	while (opcao != 1) {
-        printf("Opcao: ");
+        printf("Escolha uma opcao: ");
         scanf("%d", &opcao); // Le valor introduzido
 		switch (opcao)
 		{
 		case 0:
-			printf("erro: opcao invalida");
+			printf("erro: opcao invalida! \n");
 			break;
 		case 1:
 			socketservidor();
@@ -160,6 +158,7 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 	}
-	escreveFeedback();
+	//escreveFeedback();
+	imprimeFeedback();
 	return 0;
 }
