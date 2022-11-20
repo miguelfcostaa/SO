@@ -9,10 +9,13 @@ int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZ
  nPessoasFilaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
 
 
+//<<<<<<<<<<<<<<<<<<<<<<< SOCKET >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 void socketservidor() {
-    // sockfd -> criacao para a primeira comunicacao
-    // novoSocket -> criacao para a segunda comunicacao
-    int sockfd, novoSocket, tamanhoCliente, server_size;
+
+    int sockfd;  //criacao para a primeira comunicacao
+    int newsockfd; //criacao para a segunda comunicacao
+    int cli_size, server_size;
     struct sockaddr_un serv_end, serv_addr;
 
     // Verifica a criacao do socket
@@ -22,6 +25,7 @@ void socketservidor() {
 
     // Incializa os valores do buffer a zero
     bzero((char *)&serv_addr, sizeof(serv_addr));
+
     serv_addr.sun_family = AF_UNIX;
     strcpy(serv_addr.sun_path, UNIXSTR_PATH);
     server_size = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
@@ -29,31 +33,35 @@ void socketservidor() {
 
     // Liga o socket a um endereco
     if (bind(sockfd, (struct sockaddr *)&serv_addr, server_size) < 0) {
-        printf("Erro a ligar o socket a um endereco\n");
+        printf("erro: nao foi possivel ligar o socket a um endereco. \n");
     }
 
     // Espera a conexao com o simulador
-    printf("Esperando pelo simulador...\n");
+    printf("Começando a simulacao. Espera pelo simulador...\n");
+
+    //servidor espera para aceitar 1 cliente para o socket stream
     listen(sockfd, 1);
 
     // Criacao de um novo scoket
-    tamanhoCliente = sizeof(serv_end);
-    novoSocket = accept(sockfd, (struct sockaddr *)&serv_end, &tamanhoCliente);
-    if (novoSocket < 0) {
-        printf("Erro na aceitacao \n");
-    } // Verifica o erro na aceitacao da ligacao
+    cli_size = sizeof(serv_end);
+    newsockfd = accept(sockfd, (struct sockaddr *)&serv_end, &cli_size);
+
+    if (newsockfd < 0) {        //verifica se houve erro na aceitacao da ligacao
+        printf("erro: nao foi possivel aceitar a ligacao. \n");
+    } 
 
     // Criacao de um novo processo
-    int pid;
-    if ((pid = fork()) < 0) {
-        printf("Erro ao criar o processo filho \n"); // Erro na criacao do processo
-                                                     // filho
-    } else if (pid == 0) {                           // Processo filho irá tratar das sucessivas leituras e
-                                                     // fecha o socket do processo pai
-        close(sockfd);
-        leituraSocket(novoSocket);
+    int childpid;
+    if ((childpid = fork()) < 0) {  // verifica a criacao do processo filho
+        printf("erro: nao foi possivel criar o processo filho. \n"); 
+    } 
+    else if (childpid == 0) {       // Processo filho irá tratar das sucessivas leituras                                                  
+        close(sockfd);              // fecha o socket do processo pai                          
+        leituraSocket(newsockfd);
+        printf("Monitor pronto. \n");
     }
-    close(novoSocket);
+    close(newsockfd);
+
 }
 
 void leituraSocket(int sockfd) {
@@ -62,15 +70,12 @@ void leituraSocket(int sockfd) {
     while (!acabouSimulacao) {
         numero = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
         if (numero == 0) {            // Quando chega ao fim
-            //printf("FIM");
+            // printf("FIM");
             break;
-        } 
-		else if (numero < 0) {
-            printf("erro: nao foi possivel ler o socket. \n");
-        } 
-		else {
+        } else if (numero < 0) {
+            printf("erro: nao foi possivel ler socket. \n");
+        } else {
             printf("Mensagem Recebida");
-            //trataMensagem(buffer);
         }
     }
 }
@@ -85,6 +90,7 @@ void limpaFeedback() {
 
 void escreveFeedback() {
 	limpaFeedback();
+
 	FILE *fp;
 	fp = fopen("feedback.txt","a");
 
@@ -92,6 +98,7 @@ void escreveFeedback() {
 		printf("Ocorreu um erro ao abrir o ficheiro\n");
 	}
 	else {
+        fprintf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 		if (!acabouSimulacao) {
             fprintf(fp, "%s", "Estado atual => Simulacao a decorrer!\n");
         } 
@@ -114,6 +121,7 @@ void escreveFeedback() {
 }
 
 void imprimeFeedback(){
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	if (!acabouSimulacao) {
         printf("%s", "Estado atual => Simulacao a decorrer!\n");
     } 
@@ -134,13 +142,14 @@ void imprimeFeedback(){
 	escreveFeedback();
 }
 
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< MAIN >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
-
-int main(int argc, char *argv[]) {
+int main() {
 
 	printf("~~~~~~~~~~~~~~~~~~~~~~\n");
 	printf("1 - Começar simulacao \n");
+    printf("2 - Fechar            \n");
 	printf("~~~~~~~~~~~~~~~~~~~~~~\n");
 	int opcao = 0;
 	while (opcao != 1) {
@@ -154,11 +163,15 @@ int main(int argc, char *argv[]) {
 		case 1:
 			socketservidor();
 			break;
+        case 2:
+            printf("A fechar simulacao...\n");
+            return 0;
+            break;
 		default:
 			break;
 		}
 	}
-	//escreveFeedback();
-	imprimeFeedback();
+	escreveFeedback();
+	//imprimeFeedback();
 	return 0;
 }
