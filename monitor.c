@@ -70,16 +70,23 @@ void leituraSocket(int sockfd) {
     while (!acabouSimulacao) {
         numero = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
         if (numero == 0) {            // Quando chega ao fim
-            // printf("FIM");
-            break;
-        } else if (numero < 0) {
+            printf("FIM");
+            //break;
+            return;
+        } 
+        else if (numero < 0) {
             printf("erro: nao foi possivel ler socket. \n");
-        } else {
-            printf("Mensagem Recebida");
+        } 
+        else {
+            printf('-> Mensagem recebida. \n');
+            trataMensagem(buffer);
         }
     }
 }
 
+void trataMensagem(char mensagem[]){
+    printf(mensagem);
+}
 
 
 //>>>>>>>>>>>>>>>>>>>>>> ESCRITA E IMPRESSAO >>>>>>>>>>>>>>>>>>>>>>>>>>>>

@@ -6,23 +6,6 @@
 int sockfd = 0; // inicia socket
 
 
-void lerficheiro(){
-	FILE *fp;
-	char Linha[100];
-
-	fp = fopen("feedback.txt","r");
-   	
-	if (fp == NULL){
- 		printf("Problemas na abertura do ficheiro\n");		
-  	}
-	
-	while (!feof(fp)){
-		fgets(Linha, 100, fp);
-		printf("Linha: %s", Linha);
-	}
-	fclose(fp);
-}
-
 int criaSocket() {
 
     int sockfd, newsockfd, clilen, childpid, server_size;
@@ -52,10 +35,21 @@ int criaSocket() {
         }
     }
     printf("Simulador pronto. \n");
+    enviarMensagem("Ola");
     return sockfd;
     
 }
 
+void enviarMensagem(char *mensagemAEnviar) {// funcao que envia mensagens para o monitor
+    int numero;
+    char mensagem[MAXLINE];
+    if (strcpy(mensagem, mensagemAEnviar) != 0) {
+        numero = strlen(mensagem) + 1;
+        if (write(sockfd, mensagem, numero) != numero) {
+            printf("Erro no write!\n");
+        }
+    }
+}
 
 //<<<<<<<<<<<<<<<<<<<<<<<< F.AUX >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
