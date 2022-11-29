@@ -64,6 +64,68 @@ void socketservidor() {
 
 }
 
+
+///Funcao que recebe a informacao do servidor////
+void apanhaMensagem(int newsockfd){
+    int mensagem = 0;
+    int estado = 0;
+    int numJogadores = 0;
+    int numTentativas = 0;
+    int numDesistencias = 0;
+
+    FILE* ficheiro = fopen("ftexto.txt", "a");                                                                           // a, cria ficheiro caso n�o exista
+
+	if(ficheiro == NULL)
+	{
+		printf("Ficheiro nao foi criado");         								                                  // imprime na linha de comandos
+	}
+	else
+	{
+		while(estado!=20)
+		{
+			char linhaRecebe[MAXLINE+1];
+			mensagem=recv(newsockfd,linhaRecebe,MAXLINE,0); 							                                        //linhaRcebe vai ter o conteudo do socket
+			
+			sscanf(linhaRecebe,"%d %d %d %d",&estado,&numJogadores,&numTentativas,&numDesistencias);
+			
+			switch(estado)
+			{
+				case 1: 
+				{
+				  fprintf(ficheiro, "\n JOGO SUDOKU \n" );	              //escreve no ficheiro
+				  printf( "O JOGO IRA COMECAR DENTRO DE INSTANTES\n" );			                      //escreve no monitor
+				  break;
+				}
+				case 2:
+				{
+			        fprintf(ficheiro, "Numero de jogadores em jogo: %d\n" , numJogadores);
+			        printf( "Numero de Jogadores em jogo : %d\n" ,numJogadores); 
+				  break;
+				}
+				case 3: 
+				{
+				    fprintf(ficheiro, "Numero de desistencias: %d\n" , numDesistencias);            
+			        printf( "Numero de desistencias: %d\n" , numDesistencias);			     
+				   break;
+				} 
+				case 4: 
+				{
+				    fprintf(ficheiro, "Numero total de tentativas : %d\n" ,numTentativas);            
+			        printf( "Numero total de tentativas : %d\n" ,numTentativas);			     
+				   break;
+				}
+			    }
+		    }
+	    }
+	    if(estado==20){ 
+		    fprintf(ficheiro, " ACABOU A SIMULACAO \n" );
+		    printf( "ACABOU A SIMULACAO \n" );
+		    fclose(ficheiro);
+	    }
+	}
+
+
+
 void leituraSocket(int sockfd) {
     int numero = 0;
     char buffer[MAXLINE];
