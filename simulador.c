@@ -48,7 +48,7 @@ int criaSocket() {
         }
     }
     printf("Simulador pronto. \n");
-    enviarMensagem("Simulador: Hello!");
+    //enviarMensagem("Simulador: Hello!");
     return sockfd;
     
 }
@@ -108,6 +108,8 @@ int readConfiguracao(){     //funcao para ler a configuracao
                 probDesistir = valor;
             }
         }
+        printf( "Tempo Medio Chegada: %d\n" ,tempoMedioChegada);	
+        //printf('%i\n', tempoMedioEspera, '%i\n', tamanhoMaxFila1, '%i\n', tamanhoMaxFila2, '%i\n', tamanhoMaxZonaA, '%i\n',tamanhoMaxZonaB,'%i\n', tamanhoMaxPadaria,'%i\n',  probSerIdosa, '%i\n', probSerVIP, '%i\n', probDesistir);
         fclose(fp);
     }
     else {
@@ -138,7 +140,7 @@ int randomNumber(int max, int min) {
 }
 
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
+/*
 void simulacao(int sockfd){
     InicializaValores();
     dadosMonitor(sockfd,1,0,0,0);
@@ -173,14 +175,18 @@ void simulacao(int sockfd){
 
     dadosMonitor(sockfd,20,0,0,0);
 }
-
+*/
 
 int main(int argc, char const * argv[]){
 
-    sockfd = criarSocket();
+
+    criaSocket();
+    readConfiguracao();
     
+
+    /*sockfd = criarSocket();
     simulacao(sockfd);
-    close(sockfd);
+    close(sockfd);*/
     return 0;
 
 }

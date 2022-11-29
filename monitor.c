@@ -140,7 +140,7 @@ void leituraSocket(int sockfd) {
             printf("erro: nao foi possivel ler socket. \n");
         } 
         else {
-            printf('-> Mensagem recebida. \n');
+            printf('Mensagem recebida. \n');
             trataMensagem(buffer);
         }
     }
