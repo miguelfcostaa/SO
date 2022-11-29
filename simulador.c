@@ -20,6 +20,7 @@ int criaSocket() {
     // Zerar o socket
     bzero((char *)&serv_end, sizeof(serv_end));
 
+
     // Familia do socket
     serv_end.sun_family = AF_UNIX;
     strcpy(serv_end.sun_path, UNIXSTR_PATH);
@@ -35,13 +36,13 @@ int criaSocket() {
         }
     }
     printf("Simulador pronto. \n");
-    enviarMensagem("Ola");
+    enviarMensagem("Simulador: Hello!");
     return sockfd;
     
 }
 
 void enviarMensagem(char *mensagemAEnviar) {// funcao que envia mensagens para o monitor
-    int numero;
+   int numero;
     char mensagem[MAXLINE];
     if (strcpy(mensagem, mensagemAEnviar) != 0) {
         numero = strlen(mensagem) + 1;
@@ -50,6 +51,7 @@ void enviarMensagem(char *mensagemAEnviar) {// funcao que envia mensagens para o
         }
     }
 }
+
 
 //<<<<<<<<<<<<<<<<<<<<<<<< F.AUX >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -63,11 +65,10 @@ int randomNumber(int max, int min) {
 
 
 
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 void main(){
 
-	//lerficheiro();
 	criaSocket();
 
 }

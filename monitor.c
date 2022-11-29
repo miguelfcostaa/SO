@@ -56,7 +56,7 @@ void socketservidor() {
         printf("erro: nao foi possivel criar o processo filho. \n"); 
     } 
     else if (childpid == 0) {       // Processo filho irá tratar das sucessivas leituras                                                  
-        close(sockfd);              // fecha o socket do processo pai                          
+        close(sockfd);              // fecha o socket do processo pai                           
         leituraSocket(newsockfd);
         printf("Monitor pronto. \n");
     }
@@ -159,25 +159,27 @@ int main() {
     printf("2 - Fechar            \n");
 	printf("~~~~~~~~~~~~~~~~~~~~~~\n");
 	int opcao = 0;
-	while (opcao != 1) {
-        printf("Escolha uma opcao: ");
-        scanf("%d", &opcao); // Le valor introduzido
-		switch (opcao)
-		{
-		case 0:
-			printf("erro: opcao invalida! \n");
-			break;
-		case 1:
-			socketservidor();
-			break;
-        case 2:
-            printf("A fechar simulacao...\n");
-            return 0;
-            break;
-		default:
-			break;
-		}
-	}
+    while (!acabouSimulacao){
+        while (opcao != 1){
+            printf("Escolha uma opcao: ");
+            scanf("%d", &opcao); // Le valor introduzido
+            switch (opcao)
+            {
+            case 0:
+                printf("erro: opcao invalida! \n");
+                break;
+            case 1:
+                socketservidor();
+                break;
+            case 2:
+                printf("A fechar simulacao...\n");
+                return 0;
+                break;
+            default:
+                break;
+            }
+        }
+    }
 	escreveFeedback();
 	//imprimeFeedback();
 	return 0;

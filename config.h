@@ -14,9 +14,9 @@
 
 
 #define UNIXSTR_PATH "/tmp/s.unixstr"
-#define UNIXDG_PATH  "/tmp/s.2079120"
-#define UNIXDG_TMP   "/tmp/dgXXXXXXX"
-#define MAXLINE 512
+#define UNIXDG_PATH  "/tmp/s.unixdgx"
+#define UNIXDG_TMP   "/tmp/dg2079120"
+#define MAXLINE 1024
 #define TRUE 1
 #define FALSE 0
 
