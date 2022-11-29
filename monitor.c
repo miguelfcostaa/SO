@@ -64,7 +64,7 @@ void socketservidor() {
 
 }
 
-
+/*
 ///Funcao que recebe a informacao do servidor////
 void apanhaMensagem(int newsockfd){
     int mensagem = 0;
@@ -123,7 +123,7 @@ void apanhaMensagem(int newsockfd){
 		    fclose(ficheiro);
 	    }
 	}
-
+*/
 
 
 void leituraSocket(int sockfd) {
