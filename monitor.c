@@ -65,8 +65,8 @@ void socketservidor() {
 }
 
 /*
-///Funcao que recebe a informacao do servidor////
-void apanhaMensagem(int newsockfd){
+//funcao que recebe a informacao do servidor
+void recebeMensagem(int newsockfd){
     int mensagem = 0;
     int estado = 0;
     int numJogadores = 0;
@@ -114,15 +114,15 @@ void apanhaMensagem(int newsockfd){
 			        printf( "Numero total de tentativas : %d\n" ,numTentativas);			     
 				   break;
 				}
-			    }
-		    }
-	    }
-	    if(estado==20){ 
-		    fprintf(ficheiro, " ACABOU A SIMULACAO \n" );
-		    printf( "ACABOU A SIMULACAO \n" );
-		    fclose(ficheiro);
-	    }
+			}
+		}
 	}
+	if(estado==20){ 
+	    fprintf(ficheiro, " ACABOU A SIMULACAO \n" );
+	    printf( "ACABOU A SIMULACAO \n" );
+	    fclose(ficheiro);
+    }
+}
 */
 
 
@@ -141,7 +141,7 @@ void leituraSocket(int sockfd) {
         } 
         else {
             printf('Mensagem recebida. \n');
-            trataMensagem(buffer);
+            printf(buffer);
         }
     }
 }
