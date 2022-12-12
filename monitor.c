@@ -1,6 +1,3 @@
-//2079120 Miguel Costa
-//2105319 Ines Jardim
-
 #include "config.h"
 
 int acabouSimulacao = FALSE;
