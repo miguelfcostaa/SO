@@ -11,6 +11,7 @@
 #include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 
 #define UNIXSTR_PATH "/tmp/s.2079120"
@@ -21,6 +22,10 @@
 //Estado pessoa
 #define DESISTIU 0
 #define ESPERA 1
+#define ZONA_A 0
+#define ZONA_B 1
+#define MULHER 0
+#define HOMEM 1
 
 
 struct configuracao {
@@ -32,17 +37,20 @@ struct configuracao {
     int tamanhoMaxZonaA;
     int tamanhoMaxZonaB;
     int tamanhoMaxPadaria;
-    int probSerIdosa;
     int probSerVIP;
     int probDesistir;
-
+    int probSerMulher;
+    int probSerHomem;
 };
 
 struct pessoa {
     int id;
+    int sexualidade; //MULHER - 0 | HOMEM - 1
     int fila;
-    int idoso;
-    int desistiu;
+    int zona; //0 - Zona A | 1 - Zona B | 2 - Padaria
+    bool idoso; 
+    bool vip; 
+    bool desistiu;
     int nPessoasAFrenteDesistir;
     int estado; // 0 = espera | 
     int tempoMaxEsperaP;
@@ -62,6 +70,11 @@ struct Fila2 {
     sem_t filaEsperaNormal;
     int nFilasDisponiveis;
 };
+
+struct Padaria {
+    int nPessoasEspera;
+};
+
 
 
 //simulador.c

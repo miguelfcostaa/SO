@@ -99,10 +99,15 @@ struct pessoa criaPessoa() {
     struct pessoa people;
 
     people.id = pessoaID;
+    people.sexualidade = randomNumber(MULHER, HOMEM);
     people.fila = randomNumber(2, 1);
+    people.zona = randomNumber(3, 1);
+    people.idoso = false;
     people.vip = probabilidade(config.probSerVIP);
-    people.desistiu = FALSE;
-    if (people.vip) {
+    people.desistiu = false;
+
+
+    if (people.vip == 1) {
         people.fila = 2;
     }
     if (people.fila == 1) {
@@ -110,6 +115,15 @@ struct pessoa criaPessoa() {
     } 
     else if (people.fila == 2) {
         people.nPessoasAFrenteDesistir = randomNumber(config.tamanhoMaxFila2, (config.tamanhoMaxFila2 * 2) / 3);
+    }
+    if (people.zona == 1) { //ZONA A
+        people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxZonaA * 2), config.tamanhoMaxZonaA);
+    }
+    if (people.zona == 2) { //ZONA B
+        people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxZonaB * 2), config.tamanhoMaxZonaB);
+    }
+    if (people.zona == 3) { //ZONA DA PADARIA
+        people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxPadaria * 2), config.tamanhoMaxPadaria);
     }
     people.estado = ESPERA;
     people.tempoMaxEsperaP = randomNumber(config.tempoMaxEspera, (config.tempoMaxEspera * 2) / 3);
@@ -162,6 +176,7 @@ void Pessoa(void *ptr) {
             break;
         }
     }
+    /*
     if (pessoa.estadoTeste == POSITIVO) {
         pessoa.numeroDiasDesdePositivo = 0;
         if (pessoa.vip ||
@@ -175,7 +190,7 @@ void Pessoa(void *ptr) {
         sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 4, "Z");
         enviarMensagem(mensagem);
         pthread_mutex_lock(&mutexVariaveisHospital);
-        if (numeroPacientesNoHospital < configuracao.tamanhoHospital) {
+        if (numeroPacientesNoHospital < config.tamanhoHospital) {
             numeroPacientesNoHospital++;
             sem_post(&semaforoMedicos);
             IDsDoentesNoHospital[indexArraysIDS] = pessoa.id;
@@ -188,10 +203,10 @@ void Pessoa(void *ptr) {
         // printf("PRESEMAFORO\n");
         sem_wait(&pessoa.semaforoPessoa);
         // printf("POSSEMAFORO\n");
-    }
+    }*/
 }
 
-
+/*
 void FilaDeEspera(struct pessoa *people) {
 
     pthread_mutex_lock(&mutexFilaDeEspera);
@@ -241,7 +256,7 @@ void FilaDeEspera(struct pessoa *people) {
     }
 }
 
-
+*/
 
 int readConfiguracao(){     //funcao para ler a configuracao
 
@@ -308,6 +323,7 @@ int readConfiguracao(){     //funcao para ler a configuracao
 
 
 int main(int argc, char const * argv[]){
+
 
     criaSocket();
     readConfiguracao();
