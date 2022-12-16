@@ -1,8 +1,8 @@
+#include <stdio.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -19,24 +19,29 @@
 #define TRUE 1
 #define FALSE 0
 
+#define SIZE_TASKS 100000
+
 //Estado pessoa
 #define DESISTIU 0
 #define ESPERA 1
 #define ZONA_A 0
 #define ZONA_B 1
+#define PADARIA 2
 #define MULHER 0
 #define HOMEM 1
 
 
 struct configuracao {
-    int tempoMedioChegada;
-    int tempoMedioEspera;
-    int tempoMaxEspera;
+    int tamanhoDiscoteca;
+    int numeroDancarinos;
     int tamanhoMaxFila1;
     int tamanhoMaxFila2;
     int tamanhoMaxZonaA;
     int tamanhoMaxZonaB;
     int tamanhoMaxPadaria;
+    int tempoMedioChegada;
+    int tempoMedioEspera;
+    int tempoMaxEspera;
     int probSerVIP;
     int probDesistir;
     int probSerMulher;
@@ -48,9 +53,9 @@ struct pessoa {
     int sexualidade; //MULHER - 0 | HOMEM - 1
     int fila;
     int zona; //0 - Zona A | 1 - Zona B | 2 - Padaria
-    bool idoso; 
-    bool vip; 
-    bool desistiu;
+    int idoso; 
+    int vip; 
+    int desistiu;
     int nPessoasAFrenteDesistir;
     int estado; // 0 = espera | 
     int tempoMaxEsperaP;

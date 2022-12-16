@@ -19,17 +19,23 @@ sem_t semaforoDoentes;
 
 
 //Variaveis do ficheiro de simulacao
-int tempoMedioChegada = 0;
-int tempoMedioEspera = 0;
+int tamanhoDiscoteca = 0;
+int numeroDancarinos = 0;
 int tamanhoMaxFila1 = 0;
 int tamanhoMaxFila2 = 0;
 int tamanhoMaxZonaA = 0;
 int tamanhoMaxZonaB = 0;
 int tamanhoMaxPadaria = 0;
-int probSerIdosa = 0;
+int tempoMedioChegada = 0;
+int tempoMedioEspera = 0;
+int tempoMaxEspera = 0;
 int probSerVIP = 0;
 int probDesistir = 0;
+int probSerMulher = 0;
+int probSerHomem = 0;
 
+//TAREFAS
+pthread_t tasksID[SIZE_TASKS]; // pessoas e médicos
 
 
 int criaSocket() {
@@ -99,12 +105,12 @@ struct pessoa criaPessoa() {
     struct pessoa people;
 
     people.id = pessoaID;
-    people.sexualidade = randomNumber(MULHER, HOMEM);
+    people.sexualidade = randomNumber(HOMEM, MULHER);
     people.fila = randomNumber(2, 1);
-    people.zona = randomNumber(3, 1);
-    people.idoso = false;
+    people.zona = randomNumber(2, 0);
+    people.idoso = FALSE;
     people.vip = probabilidade(config.probSerVIP);
-    people.desistiu = false;
+    people.desistiu = FALSE;
 
 
     if (people.vip == 1) {
@@ -116,19 +122,30 @@ struct pessoa criaPessoa() {
     else if (people.fila == 2) {
         people.nPessoasAFrenteDesistir = randomNumber(config.tamanhoMaxFila2, (config.tamanhoMaxFila2 * 2) / 3);
     }
-    if (people.zona == 1) { //ZONA A
+    if (people.zona == ZONA_A) { //ZONA A
         people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxZonaA * 2), config.tamanhoMaxZonaA);
     }
-    if (people.zona == 2) { //ZONA B
+    if (people.zona == ZONA_B) { //ZONA B
         people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxZonaB * 2), config.tamanhoMaxZonaB);
     }
-    if (people.zona == 3) { //ZONA DA PADARIA
+    if (people.zona == PADARIA) { //ZONA DA PADARIA
         people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxPadaria * 2), config.tamanhoMaxPadaria);
     }
     people.estado = ESPERA;
     people.tempoMaxEsperaP = randomNumber(config.tempoMaxEspera, (config.tempoMaxEspera * 2) / 3);
 
     printf("Criado Pessoa %d: \n", pessoaID);
+    /*
+    printf("id: %d\n",people.id);
+    printf("sexualidade: %d\n",people.sexualidade);
+    printf("fila: %d\n",people.fila);
+    printf("zona: %d\n",people.zona);
+    printf("idoso: %d\n",people.idoso);
+    printf("vip: %d\n",people.vip);
+    printf("desistiu: %d\n",people.desistiu);
+    printf("pessoas a frente: %d\n",people.nPessoasAFrenteDesistir);
+    printf("estado: %d\n",people.estado);
+    printf("tempo: %d\n",people.tempoMaxEsperaP);*/
     pessoaID++;
     pthread_mutex_unlock(&mutexCriarPessoa);
     return people;
@@ -136,7 +153,12 @@ struct pessoa criaPessoa() {
 
 void Pessoa(void *ptr) {
     struct pessoa pessoa = criaPessoa();
+
+
+
+    /*    
     PessoasCriadas[pessoa.id] = &pessoa;
+    printf(pessoa);
     char mensagem[MAXLINE];
 
     while (TRUE) {
@@ -175,7 +197,7 @@ void Pessoa(void *ptr) {
         else {
             break;
         }
-    }
+    }*/
     /*
     if (pessoa.estadoTeste == POSITIVO) {
         pessoa.numeroDiasDesdePositivo = 0;
@@ -258,6 +280,22 @@ void FilaDeEspera(struct pessoa *people) {
 
 */
 
+int simulacao() {
+    
+    struct pessoa pessoa = criaPessoa();
+    
+    
+    for (int i = 0; i < config.numeroDancarinos; i++) {
+        if (pthread_create(&tasksID[pessoaID], NULL, Pessoa, NULL)) {
+            printf("Erro na criação da tarefa\n");
+            exit(1);
+        }
+        usleep(50);
+    }
+
+    
+}
+
 int readConfiguracao(){     //funcao para ler a configuracao
 
     FILE* fp = fopen("simulador.conf", "r");    //abre o ficheiro para ler
@@ -271,14 +309,15 @@ int readConfiguracao(){     //funcao para ler a configuracao
             
             sscanf(linha, "%s : %d", parametro , &valor);                            // faz scan da linha
                
-            if(strcmp(parametro, "tempoMedioChegada") == 0)
-            {                
-                tempoMedioChegada = valor;
-            }
-            if(strcmp(parametro, "tempoMedioEspera") == 0)
+            
+            if(strcmp(parametro, "tamanhoDiscoteca") == 0)
             {                            
-                tempoMedioEspera = valor;
-            }  
+                tamanhoDiscoteca = valor;
+            } 
+            if(strcmp(parametro, "numeroDancarinos") == 0)
+            {                            
+                numeroDancarinos = valor;
+            } 
             if(strcmp(parametro, "tamanhoMaxFila1") == 0)
             {                            
                 tamanhoMaxFila1 = valor;
@@ -299,10 +338,14 @@ int readConfiguracao(){     //funcao para ler a configuracao
             {
                 tamanhoMaxPadaria = valor;
             }
-            if(strcmp(parametro, "probSerIdosa") == 0)
-            {
-                probSerIdosa = valor;
+            if(strcmp(parametro, "tempoMedioChegada") == 0)
+            {                
+                tempoMedioChegada = valor;
             }
+            if(strcmp(parametro, "tempoMedioEspera") == 0)
+            {                            
+                tempoMedioEspera = valor;
+            }  
             if(strcmp(parametro, "probSerVIP") == 0)
             {					     
                 probSerVIP = valor;
@@ -311,8 +354,19 @@ int readConfiguracao(){     //funcao para ler a configuracao
             {
                 probDesistir = valor;
             }
+            if(strcmp(parametro, "probSerMulher") == 0)					     
+            {
+                probSerMulher = valor;
+            }
+            if(strcmp(parametro, "probSerHomem") == 0)					     
+            {
+                probSerHomem = valor;
+            }
         }
-        printf( "Tempo Medio Chegada: %d; Configuracao lida com sucesso.\n" ,tempoMedioChegada);	
+        printf( "Tamanho Discoteca: %d \n", tamanhoDiscoteca);	
+        printf( "Numero Dancarinos: %d \n", numeroDancarinos);	
+        printf( "Tamanho Max Fila1: %d \n", tamanhoMaxFila1);	
+        printf( "Tamanho Max Fila2: %d \n", tamanhoMaxFila2);	
         fclose(fp);
     }
     else {
@@ -327,7 +381,7 @@ int main(int argc, char const * argv[]){
 
     criaSocket();
     readConfiguracao();
-    
+    simulacao();
     /*sockfd = criarSocket();
     simulacao(sockfd);
     close(sockfd);*/
