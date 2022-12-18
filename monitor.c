@@ -124,16 +124,16 @@ void recebeMensagem(int newsockfd){
 
 
 void leituraSocket(int sockfd) {
-    int numero = 0;
+    int x = 0;
     char buffer[MAXLINE];
     while (!acabouSimulacao) {
-        numero = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
-        if (numero == 0) {            // Quando chega ao fim
-            printf("FIM");
+        x = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
+        if (x == 0) {            // Quando chega ao fim
+            printf("FIM \n");
             //break;
             return;
         } 
-        else if (numero < 0) {
+        else if (x < 0) {
             printf("erro: nao foi possivel ler socket. \n");
         } 
         else {

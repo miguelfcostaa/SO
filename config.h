@@ -22,18 +22,30 @@
 #define SIZE_TASKS 100000
 
 //Estado pessoa
-#define DESISTIU 0
-#define ESPERA 1
+#define ESPERA 0
+#define COMA 1
+#define MULHER 2
+#define HOMEM 3
+
+
+//Resultado do teste
+#define NAO_FEZ_TESTE 0
+#define MORREU 1
+#define SOBREVIVEU 2
+
+//Zona
 #define ZONA_A 0
 #define ZONA_B 1
 #define PADARIA 2
-#define MULHER 0
-#define HOMEM 1
+
+//TEMPO 
+#define MINUTO 60 //1 minuto = 60 segundos
+#define HORA 60 * 60 //1 hora = 3600 segundos
 
 
 struct configuracao {
     int tamanhoDiscoteca;
-    int numeroDancarinos;
+    int tempoLimiteSimulacao;
     int tamanhoMaxFila1;
     int tamanhoMaxFila2;
     int tamanhoMaxZonaA;
@@ -42,6 +54,7 @@ struct configuracao {
     int tempoMedioChegada;
     int tempoMedioEspera;
     int tempoMaxEspera;
+    int tempoFazerTeste;
     int probSerVIP;
     int probDesistir;
     int probSerMulher;
@@ -57,7 +70,8 @@ struct pessoa {
     int vip; 
     int desistiu;
     int nPessoasAFrenteDesistir;
-    int estado; // 0 = espera | 
+    int estado; // 0 = espera | 1 = coma
+    int resultadoTeste; //0 = nao fez teste | 1 = morreu | 2 = sobreviveu
     int tempoMaxEsperaP;
 };
 
@@ -76,9 +90,6 @@ struct Fila2 {
     int nFilasDisponiveis;
 };
 
-struct Padaria {
-    int nPessoasEspera;
-};
 
 
 

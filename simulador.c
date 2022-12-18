@@ -3,6 +3,9 @@
 //Variaveis globais
 int sockfd = 0; // inicia socket
 int pessoaID = 0;
+int tempoDecorrido = 0; // tempo decorrido em segundos
+
+//configuracao e filas
 struct configuracao config;
 struct Fila1 filas1;
 struct Fila2 filas2;
@@ -12,7 +15,6 @@ struct Fila2 filas2;
 pthread_mutex_t mutexCriarPessoa;
 pthread_mutex_t mutexFilaDeEspera;
 pthread_mutex_t mutexVariaveisSimulacao;
-pthread_mutex_t mutexVariaveisHospital;
 sem_t semaforoEnviarMensagem;
 sem_t semaforoMedicos;
 sem_t semaforoDoentes;
@@ -20,7 +22,7 @@ sem_t semaforoDoentes;
 
 //Variaveis do ficheiro de simulacao
 int tamanhoDiscoteca = 0;
-int numeroDancarinos = 0;
+int tempoLimiteSimulacao = 0;
 int tamanhoMaxFila1 = 0;
 int tamanhoMaxFila2 = 0;
 int tamanhoMaxZonaA = 0;
@@ -29,13 +31,16 @@ int tamanhoMaxPadaria = 0;
 int tempoMedioChegada = 0;
 int tempoMedioEspera = 0;
 int tempoMaxEspera = 0;
+int tempoFazerTeste = 0;
 int probSerVIP = 0;
 int probDesistir = 0;
 int probSerMulher = 0;
 int probSerHomem = 0;
+int probMorrerComa = 0;
 
 //TAREFAS
 pthread_t tasksID[SIZE_TASKS]; // pessoas e médicos
+struct pessoa *pessoasCriadas[100000];
 
 
 int criaSocket() {
@@ -132,6 +137,7 @@ struct pessoa criaPessoa() {
         people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxPadaria * 2), config.tamanhoMaxPadaria);
     }
     people.estado = ESPERA;
+    people.resultadoTeste = NAO_FEZ_TESTE;
     people.tempoMaxEsperaP = randomNumber(config.tempoMaxEspera, (config.tempoMaxEspera * 2) / 3);
 
     printf("Criado Pessoa %d: \n", pessoaID);
@@ -151,84 +157,8 @@ struct pessoa criaPessoa() {
     return people;
 }
 
-void Pessoa(void *ptr) {
-    struct pessoa pessoa = criaPessoa();
 
 
-
-    /*    
-    PessoasCriadas[pessoa.id] = &pessoa;
-    printf(pessoa);
-    char mensagem[MAXLINE];
-
-    while (TRUE) {
-        FilaDeEspera(&pessoa);
-        if (!pessoa.desistiu) {
-            // sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 3, "Z");
-            // enviarMensagem(mensagem);
-            int tipoTeste = -1;
-            int tempoEsperaTeste = 0;
-            // printf("TEMPO ESPERA TESTE em ms: %d\n",tempoEsperaTeste);
-            usleep(tempoEsperaTeste);
-            fazerTeste(&pessoa);
-            if (pessoa.estadoTeste == POSITIVO) {
-                printf(AMARELO "Pessoa %d testou positivo \n" RESET, pessoa.id);
-                sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 8, "Z");
-                enviarMensagem(mensagem);
-                sem_init(&pessoa.semaforoPessoa, 0, 0);
-                pessoa.numeroDiasDesdePositivo = 0;
-                pessoa.estado = ISOLAMENTO;
-                break;
-            } 
-            else if (pessoa.estadoTeste == NEGATIVO) {
-                printf(AMARELO "Pessoa %d testou negativo \n" RESET, pessoa.id);
-                sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 9, 0);
-                enviarMensagem(mensagem);
-                pessoa.estado = SOBREVIVEU;
-                break;
-            } 
-            else {
-                printf(AMARELO "Pessoa %d testou inconclusivo \n" RESET, pessoa.id);
-                sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 12, "Z");
-                enviarMensagem(mensagem);
-                pessoa.estado = ESPERA;
-            }
-        } 
-        else {
-            break;
-        }
-    }*/
-    /*
-    if (pessoa.estadoTeste == POSITIVO) {
-        pessoa.numeroDiasDesdePositivo = 0;
-        if (pessoa.vip ||
-            probabilidade(
-                configuracao
-                    .probabilidadeNaoIdosoPrecisaHospital)) { // Vai para o Hospital
-        pessoa.estado = HOSPITAL;
-        printf(CIANO
-                "A pessoa com id %d foi transportada para o hospital.\n" RESET,
-                pessoa.id);
-        sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 4, "Z");
-        enviarMensagem(mensagem);
-        pthread_mutex_lock(&mutexVariaveisHospital);
-        if (numeroPacientesNoHospital < config.tamanhoHospital) {
-            numeroPacientesNoHospital++;
-            sem_post(&semaforoMedicos);
-            IDsDoentesNoHospital[indexArraysIDS] = pessoa.id;
-            pthread_mutex_unlock(&mutexVariaveisHospital);
-            sem_wait(&semaforoDoentes);
-            pthread_mutex_lock(&mutexVariaveisHospital);
-        }
-        pthread_mutex_unlock(&mutexVariaveisHospital);
-        }
-        // printf("PRESEMAFORO\n");
-        sem_wait(&pessoa.semaforoPessoa);
-        // printf("POSSEMAFORO\n");
-    }*/
-}
-
-/*
 void FilaDeEspera(struct pessoa *people) {
 
     pthread_mutex_lock(&mutexFilaDeEspera);
@@ -236,7 +166,7 @@ void FilaDeEspera(struct pessoa *people) {
     int tempoEspera;
     int valorSemaforo = -1;
 
-    if (people->fila == 1) { // CENTRO TESTES 1
+    if (people->fila == 1) { // FILA 1
         if (filas1.nPessoasEspera < config.tamanhoMaxFila1) {
             printf("A pessoa com o id %d chegou a fila 1.\n", people->id);
             //sprintf(mensagem, "%d-%d-%d-%d", idPessoa, timestamp, 0, 1);
@@ -276,24 +206,86 @@ void FilaDeEspera(struct pessoa *people) {
             pthread_mutex_unlock(&mutexFilaDeEspera);
         }
     }
+    else if (people->fila == 2) {
+        printf("A pessoa com o id %d chegou a fila 2.\n", people->id);
+    }
+    
 }
 
-*/
 
-int simulacao() {
-    
+void Pessoa(void *ptr) {
     struct pessoa pessoa = criaPessoa();
-    
-    
-    for (int i = 0; i < config.numeroDancarinos; i++) {
-        if (pthread_create(&tasksID[pessoaID], NULL, Pessoa, NULL)) {
-            printf("Erro na criação da tarefa\n");
-            exit(1);
-        }
-        usleep(50);
-    }
+    pessoasCriadas[pessoa.id] = &pessoa;
+    char mensagem[MAXLINE];
 
-    
+    while (TRUE) {
+        FilaDeEspera(&pessoa);
+        if (!pessoa.desistiu) {
+            // sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 3, "Z");
+            // enviarMensagem(mensagem);
+            //int tipoTeste = -1;
+            //int tempoEsperaTeste = 0;
+            // printf("TEMPO ESPERA TESTE em ms: %d\n",tempoEsperaTeste);
+            //usleep(tempoEsperaTeste);
+            //fazerTeste(&pessoa);
+
+            /*if (pessoa.estado)
+
+            if (pessoa.estadoTeste == POSITIVO) {
+                printf(AMARELO "Pessoa %d testou positivo \n" RESET, pessoa.id);
+                sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 8, "Z");
+                enviarMensagem(mensagem);
+                sem_init(&pessoa.semaforoPessoa, 0, 0);
+                pessoa.numeroDiasDesdePositivo = 0;
+                pessoa.estado = ISOLAMENTO;
+                break;
+            } 
+            else if (pessoa.estadoTeste == NEGATIVO) {
+                printf(AMARELO "Pessoa %d testou negativo \n" RESET, pessoa.id);
+                sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 9, 0);
+                enviarMensagem(mensagem);
+                pessoa.estado = SOBREVIVEU;
+                break;
+            } 
+            else {
+                printf(AMARELO "Pessoa %d testou inconclusivo \n" RESET, pessoa.id);
+                sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 12, "Z");
+                enviarMensagem(mensagem);
+                pessoa.estado = ESPERA;
+            }*/
+        } 
+        else {
+            break;
+        }
+    }
+    /*
+    if (pessoa.estadoTeste == POSITIVO) {
+        pessoa.numeroDiasDesdePositivo = 0;
+        if (pessoa.vip ||
+            probabilidade(
+                configuracao
+                    .probabilidadeNaoIdosoPrecisaHospital)) { // Vai para o Hospital
+        pessoa.estado = HOSPITAL;
+        printf(CIANO
+                "A pessoa com id %d foi transportada para o hospital.\n" RESET,
+                pessoa.id);
+        sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 4, "Z");
+        enviarMensagem(mensagem);
+        pthread_mutex_lock(&mutexVariaveisHospital);
+        if (numeroPacientesNoHospital < config.tamanhoHospital) {
+            numeroPacientesNoHospital++;
+            sem_post(&semaforoMedicos);
+            IDsDoentesNoHospital[indexArraysIDS] = pessoa.id;
+            pthread_mutex_unlock(&mutexVariaveisHospital);
+            sem_wait(&semaforoDoentes);
+            pthread_mutex_lock(&mutexVariaveisHospital);
+        }
+        pthread_mutex_unlock(&mutexVariaveisHospital);
+        }
+        // printf("PRESEMAFORO\n");
+        sem_wait(&pessoa.semaforoPessoa);
+        // printf("POSSEMAFORO\n");
+    }*/
 }
 
 int readConfiguracao(){     //funcao para ler a configuracao
@@ -314,9 +306,9 @@ int readConfiguracao(){     //funcao para ler a configuracao
             {                            
                 tamanhoDiscoteca = valor;
             } 
-            if(strcmp(parametro, "numeroDancarinos") == 0)
+            if(strcmp(parametro, "tempoLimiteSimulacao") == 0)
             {                            
-                numeroDancarinos = valor;
+                tempoLimiteSimulacao = valor;
             } 
             if(strcmp(parametro, "tamanhoMaxFila1") == 0)
             {                            
@@ -346,6 +338,10 @@ int readConfiguracao(){     //funcao para ler a configuracao
             {                            
                 tempoMedioEspera = valor;
             }  
+            if(strcmp(parametro, "tempoFazerTeste") == 0)
+            {                            
+                tempoFazerTeste = valor;
+            } 
             if(strcmp(parametro, "probSerVIP") == 0)
             {					     
                 probSerVIP = valor;
@@ -362,17 +358,56 @@ int readConfiguracao(){     //funcao para ler a configuracao
             {
                 probSerHomem = valor;
             }
+            if(strcmp(parametro, "probMorrerComa") == 0)
+            {
+                probMorrerComa = valor;
+            }
         }
+        /*
         printf( "Tamanho Discoteca: %d \n", tamanhoDiscoteca);	
         printf( "Numero Dancarinos: %d \n", numeroDancarinos);	
-        printf( "Tamanho Max Fila1: %d \n", tamanhoMaxFila1);	
-        printf( "Tamanho Max Fila2: %d \n", tamanhoMaxFila2);	
+        printf( "Tamanho Max Fila 1: %d \n", tamanhoMaxFila1);	
+        printf( "Tamanho Max Fila 2: %d \n", tamanhoMaxFila2);	
+        printf( "Tamanho Max Zona A: %d \n", tamanhoMaxZonaA);	
+        printf( "Tamanho Max Zona B: %d \n", tamanhoMaxZonaB);	
+        printf( "Tamanho Max Padaria: %d \n", tamanhoMaxPadaria);
+        */
+        printf("Tempo Limite Simulacao: %d \n", tempoLimiteSimulacao);	
+        
         fclose(fp);
     }
     else {
         printf("erro: nao foi possivel ler o ficheiro de configuracao. \n");
     }
 }
+
+
+int simulacao() {
+
+
+    while (tempoLimiteSimulacao != tempoDecorrido)
+    {
+        tempoDecorrido++;
+        printf("limite: %d \n", tempoLimiteSimulacao);
+        printf("decorrido: %d \n", tempoDecorrido);
+        /*
+        if (TRUE == 1) {
+          // cria tarefas pessoas
+          pthread_mutex_unlock(&mutexVariaveisSimulacao);
+          if (pthread_create(&tasksID[pessoaID], NULL, Pessoa, NULL)) {
+            printf("Erro na criação da tarefa\n");
+            exit(1);
+          }
+          pthread_mutex_lock(&mutexVariaveisSimulacao);
+        }*/
+
+    }
+    
+
+    
+}
+
+
 
 
 
