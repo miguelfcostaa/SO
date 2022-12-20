@@ -66,8 +66,7 @@ struct pessoa {
     int id;
     int sexualidade; //MULHER - 0 | HOMEM - 1
     int fila;
-    int zona; //0 - Zona A | 1 - Zona B | 2 - Padaria
-    int idoso; 
+    int zona; //0 - Zona A | 1 - Zona B | 2 - Padaria 
     int vip; 
     int desistiu;
     int nPessoasAFrenteDesistir;

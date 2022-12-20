@@ -82,7 +82,7 @@ void recebeInformacao(int newsockfd) {
         
 	}
     while (estado != 99) {
-        printf("ENTROU NO LOOP WHILE(ESTADO != 99).\n");
+
         char buffer[MAXLINE+1];
         mensagem = recv(newsockfd, buffer, MAXLINE, 0); 							                                        //linhaRcebe vai ter o conteudo do socket
                         
