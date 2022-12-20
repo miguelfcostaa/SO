@@ -189,6 +189,7 @@ void FilaDeEspera(struct pessoa *people) {
         pthread_mutex_unlock(&mutexFilaDeEspera);
         if (nPessoasNaFila < config.tamanhoMaxFila1) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             tipoDePessoa = defineTipoPessoa(people);
+            enviaInformacao(sockfd, people->id, 0, 0, 1);
             printf("%s chegou a fila 1.\n", tipoDePessoa);
             free(tipoDePessoa);
             if (people->nPessoasAFrenteDesistir < nPessoasNaFila) { // Se o numero de pessoas na fila de espera for maior que o numero de pessoas a frente que essa pessoa admite, ela desiste
@@ -205,6 +206,7 @@ void FilaDeEspera(struct pessoa *people) {
         pthread_mutex_unlock(&mutexFilaDeEspera);
         if (nPessoasNaFila < config.tamanhoMaxFila2) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             tipoDePessoa = defineTipoPessoa(people);
+            enviaInformacao(sockfd, people->id, 0, 0, 2);
             printf("%s chegou a fila 2.\n", tipoDePessoa);
             free(tipoDePessoa);
             if (people->nPessoasAFrenteDesistir < nPessoasNaFila) { // Se o numero de pessoas na fila de espera for maior que o numero de pessoas a frente que essa pessoa admite, ela desiste
