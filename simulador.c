@@ -178,16 +178,15 @@ struct pessoa criaPessoa() {
 
 void FilaDeEspera(struct pessoa *people) {
 
-    char mensagem[TAMANHO_LINHA];
-    long timestamp = minutosDecorridos;
-    int index, tempoEspera;
-    int valorSemaforo; // Fica com o tamanho do semaforo
+    //long timestamp = minutosDecorridos;
+    //int index, tempoEspera;
+    //int valorSemaforo; // Fica com o tamanho do semaforo
     char *tipoDePessoa;
     
     if (people->fila == 1) { // CENTRO TESTES 1
-        pthread_mutex_lock(&mutexVariaveisCentros);
+        pthread_mutex_lock(&mutexFilaDeEspera);
         int nPessoasNaFila = filas1.nPessoasEspera;
-        pthread_mutex_unlock(&mutexVariaveisCentros);
+        pthread_mutex_unlock(&mutexFilaDeEspera);
         if (nPessoasNaFila < config.tamanhoMaxFila1) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             tipoDePessoa = defineTipoPessoa(people);
             printf("%s chegou a fila 1.\n", tipoDePessoa);
@@ -201,9 +200,9 @@ void FilaDeEspera(struct pessoa *people) {
         }
     }
     else if (people->fila == 2) {
-        pthread_mutex_lock(&mutexVariaveisCentros);
-        int nPessoasNaFila = filas2.nPessoasEspera;
-        pthread_mutex_unlock(&mutexVariaveisCentros);
+        pthread_mutex_lock(&mutexFilaDeEspera);
+        int nPessoasNaFila = filas2.nPessoasNormalEspera;
+        pthread_mutex_unlock(&mutexFilaDeEspera);
         if (nPessoasNaFila < config.tamanhoMaxFila2) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             tipoDePessoa = defineTipoPessoa(people);
             printf("%s chegou a fila 2.\n", tipoDePessoa);
