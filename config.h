@@ -16,10 +16,10 @@
 
 #define UNIXSTR_PATH "/tmp/s.2079120"
 #define MAXLINE 1024    //tamanho maximo do buffer
+#define SIZE_TASKS 100000
 #define TRUE 1
 #define FALSE 0
 
-#define SIZE_TASKS 100000
 
 //Estado pessoa
 #define ESPERA 0
@@ -55,10 +55,11 @@ struct configuracao {
     int tempoMedioEspera;
     int tempoMaxEspera;
     int tempoFazerTeste;
-    int probSerVIP;
-    int probDesistir;
-    int probSerMulher;
-    int probSerHomem;
+    float probSerVIP;
+    float probDesistir;
+    float probSerMulher;
+    float probSerHomem;
+    float probMorrerComa;
 };
 
 struct pessoa {
