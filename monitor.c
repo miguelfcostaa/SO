@@ -2,11 +2,11 @@
 
 int acabouSimulacao = FALSE;
 
-int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZonaA = 0, nPessoasFilaA = 0, nPessoasZonaB = 0,
- nPessoasFilaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
+int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZonaA = 0, nPessoasZonaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
 
 
 //<<<<<<<<<<<<<<<<<<<<<<< SOCKET >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 
 void socketservidor() {
 
@@ -22,7 +22,6 @@ void socketservidor() {
 
     // Incializa os valores do buffer a zero
     bzero((char *)&serv_addr, sizeof(serv_addr));
-
     serv_addr.sun_family = AF_UNIX;
     strcpy(serv_addr.sun_path, UNIXSTR_PATH);
     server_size = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
@@ -41,7 +40,7 @@ void socketservidor() {
 
     // Criacao de um novo scoket
     cli_size = sizeof(serv_end);
-    newsockfd = accept(sockfd, (struct sockaddr *)&serv_end, &cli_size);
+    newsockfd = accept (sockfd, (struct sockaddr *) &serv_end, &cli_size);
 
     if (newsockfd < 0) {        //verifica se houve erro na aceitacao da ligacao
         printf("erro: nao foi possivel aceitar a ligacao. \n");
@@ -53,74 +52,83 @@ void socketservidor() {
         printf("erro: nao foi possivel criar o processo filho. \n"); 
     } 
     else if (childpid == 0) {       // Processo filho irá tratar das sucessivas leituras                                                  
-        close(sockfd);              // fecha o socket do processo pai                           
-        leituraSocket(newsockfd);
-        printf("Monitor pronto. \n");
+        close(sockfd);              // fecha o socket do processo pai  
+        printf("Monitor pronto. \n");                         
+        recebeInformacao(newsockfd);
+        
     }
     close(newsockfd);
-
+    
 }
 
-/*
-//funcao que recebe a informacao do servidor
-void recebeMensagem(int newsockfd){
+void recebeInformacao(int newsockfd) {
+    
     int mensagem = 0;
+    //char buffer[30];
+    //strcpy(buffer, mensagem);
+    int pessoaID = 0;
+    int tempoMedido = 0;
     int estado = 0;
-    int numJogadores = 0;
-    int numTentativas = 0;
-    int numDesistencias = 0;
+    int acontecimento = 0;
+    
+    //int acontecimento = strtol(info[2], NULL, 10); 
 
-    FILE* ficheiro = fopen("ftexto.txt", "a");                                                                           // a, cria ficheiro caso n�o exista
+    //(pessoaID, timestamp, estado, acontecimento)
 
-	if(ficheiro == NULL)
-	{
-		printf("Ficheiro nao foi criado");         								                                  // imprime na linha de comandos
+    if ((pessoaID == 0) && (tempoMedido == 0) && (acontecimento == 0)) {
+        if (estado == 0){
+            printf("Bem vindo! A simulação comecou!\n");
+        }
+        
 	}
-	else
-	{
-		while(estado!=20)
-		{
-			char linhaRecebe[MAXLINE+1];
-			mensagem=recv(newsockfd,linhaRecebe,MAXLINE,0); 							                                        //linhaRcebe vai ter o conteudo do socket
-			
-			sscanf(linhaRecebe,"%d %d %d %d",&estado,&numJogadores,&numTentativas,&numDesistencias);
-			
-			switch(estado)
-			{
-				case 1: 
-				{
-				  fprintf(ficheiro, "\n JOGO SUDOKU \n" );	              //escreve no ficheiro
-				  printf( "O JOGO IRA COMECAR DENTRO DE INSTANTES\n" );			                      //escreve no monitor
-				  break;
-				}
-				case 2:
-				{
-			        fprintf(ficheiro, "Numero de jogadores em jogo: %d\n" , numJogadores);
-			        printf( "Numero de Jogadores em jogo : %d\n" ,numJogadores); 
-				  break;
-				}
-				case 3: 
-				{
-				    fprintf(ficheiro, "Numero de desistencias: %d\n" , numDesistencias);            
-			        printf( "Numero de desistencias: %d\n" , numDesistencias);			     
-				   break;
-				} 
-				case 4: 
-				{
-				    fprintf(ficheiro, "Numero total de tentativas : %d\n" ,numTentativas);            
-			        printf( "Numero total de tentativas : %d\n" ,numTentativas);			     
-				   break;
-				}
-			}
-		}
-	}
-	if(estado==20){ 
-	    fprintf(ficheiro, " ACABOU A SIMULACAO \n" );
-	    printf( "ACABOU A SIMULACAO \n" );
-	    fclose(ficheiro);
+    while (estado != 99) {
+        printf("ENTROU NO LOOP WHILE(ESTADO != 99).\n");
+        char buffer[MAXLINE+1];
+        mensagem = recv(newsockfd, buffer, MAXLINE, 0); 							                                        //linhaRcebe vai ter o conteudo do socket
+                        
+        sscanf(buffer,"%d %d %d %d", &pessoaID, &tempoMedido, &estado, &acontecimento);	  
+
+        switch (estado)
+        {
+            case 0: //chegou uma pessoa
+                printf("Chegou uma pessoa \n");
+                nPessoasTotal++;
+                if (acontecimento == 1) {
+                    nPessoasFila1++;
+                } 
+                else if (acontecimento == 2) {
+                    nPessoasFila2++;
+                }
+                break;
+
+            case 2: // Pessoa saiu da fila, porque desistiu
+                printf("Uma pessoa desistiu \n");
+                if (acontecimento == 1) {
+                    nPessoasFila1--;
+                } 
+                else if (acontecimento == 2) {
+                    nPessoasFila2--;
+                }
+                break;
+
+            case 3:
+
+                break;
+                
+            default:
+                
+                break;
+        }
+        imprimeFeedback();
+            
     }
+    if(estado == 99){ 
+        printf("O tempo limite da simulacao foi atingido.\n");
+        acabouSimulacao = TRUE;
+    }
+              
 }
-*/
+
 
 
 void leituraSocket(int sockfd) {
@@ -130,21 +138,16 @@ void leituraSocket(int sockfd) {
         x = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
         if (x == 0) {            // Quando chega ao fim
             printf("FIM \n");
-            //break;
-            return;
+            break;
         } 
         else if (x < 0) {
             printf("erro: nao foi possivel ler socket. \n");
         } 
         else {
             printf('Mensagem recebida. \n');
-            printf(buffer);
+            recebeInformacao(buffer);
         }
     }
-}
-
-void trataMensagem(char mensagem[]){
-    printf(mensagem);
 }
 
 
@@ -176,9 +179,7 @@ void escreveFeedback() {
 		fprintf(fp, "Pessoas a espera na fila 1: %d\n", nPessoasFila1);
 		fprintf(fp, "Pessoas a espera na fila 2: %d\n", nPessoasFila2);
 		fprintf(fp, "Pessoas na zona A: %d\n", nPessoasZonaA);
-		fprintf(fp, "Pessoas na fila para a zona A: %d\n", nPessoasFilaA);
 		fprintf(fp, "Pessoas na zona B: %d\n", nPessoasZonaB);
-		fprintf(fp, "Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
 		fprintf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
 		fprintf(fp, "Tempo medio de espera (minutos): %d\n", tempoMedio);
 		fprintf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -199,9 +200,7 @@ void imprimeFeedback(){
 	printf("Pessoas a espera na fila 1: %d\n", nPessoasFila1);
 	printf("Pessoas a espera na fila 2: %d\n", nPessoasFila2);
 	printf("Pessoas na zona A: %d\n", nPessoasZonaA);
-	printf("Pessoas na fila para a zona A: %d\n", nPessoasFilaA);
 	printf("Pessoas na zona B: %d\n", nPessoasZonaB);
-	printf("Pessoas na fila para a zona B: %d\n", nPessoasFilaB);
 	printf("Pessoas na Padaria: %d\n", nPessoasPadaria);
 	printf("Tempo medio de espera (minutos): %d\n", tempoMedio);	
 	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -235,11 +234,11 @@ int main() {
                 return 0;
                 break;
             default:
+                printf("erro: opcao invalida! \n");
                 break;
             }
         }
     }
 	escreveFeedback();
-	//imprimeFeedback();
 	return 0;
 }
