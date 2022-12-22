@@ -234,8 +234,8 @@ void FilaDeEspera(struct pessoa *people) {
             if (people->nPessoasAFrenteDesistir > nPessoasNaFila) { // Se o numero de pessoas na fila de espera for maior que o numero de pessoas a frente que essa pessoa admite, ela desiste
                 //pessoa->tempoChegadaFilaEspera = timestamp;
                 pthread_mutex_lock(&mutexFilaDeEspera);
-                filas2.nPessoasEspera++; //aumenta o numero de pessoas a espera na fila 1
-                printf("pessoas na fila: %d \n", filas2.nPessoasEspera);
+                filas2.nPessoasNormalEspera++; //aumenta o numero de pessoas a espera na fila 1
+                //printf("pessoas na fila: %d \n", filas2.nPessoasNormalEspera);
                 pthread_mutex_unlock(&mutexFilaDeEspera);
                 //sem_wait(&centroTestes1.filaEspera);
                 //pthread_mutex_lock(&mutexVariaveisSimulacao);
@@ -410,12 +410,13 @@ int simulacao(char* configFile) {
                 exit(1);
             }
             pthread_mutex_lock(&mutexVariaveisSimulacao);
-            sleep(3);
+            sleep();
             
         }
-        //enviaInformacao(sockfd, pessoaID, 0, 99, 0); 
     }
-    
+    if (config.tempoLimiteSimulacao == tempoDecorrido) {
+        enviaInformacao(sockfd, 0, 0, 99, 0); 
+    }
 }
 
 
