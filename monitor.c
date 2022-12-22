@@ -64,14 +64,10 @@ void socketservidor() {
 void recebeInformacao(int newsockfd) {
     
     int mensagem = 0;
-    //char buffer[30];
-    //strcpy(buffer, mensagem);
     int pessoaID = 0;
     int tempoMedido = 0;
     int estado = 0;
-    int acontecimento = 0;
-    
-    //int acontecimento = strtol(info[2], NULL, 10); 
+    int acontecimento = 0;; 
 
     //(pessoaID, timestamp, estado, acontecimento)
 

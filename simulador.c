@@ -107,14 +107,14 @@ int randomNumber(int max, int min) {
 }
 
 char *defineTipoPessoa(struct pessoa *people){
-    char *tipoPessoa;
+    char *tipoPessoa = malloc(sizeof(40));;
 
     if(people->vip == 1){
-        tipoPessoa = "A pessoa VIP";
+        sprintf(tipoPessoa, "A pessoa VIP com o id %d", people->id);
         return tipoPessoa;
     }
     else {
-        tipoPessoa = "A pessoa";
+        sprintf(tipoPessoa, "A pessoa com o id %d", people->id);
         return tipoPessoa;
     }
 
@@ -300,11 +300,7 @@ int readConfiguracao(char ficheiro[]) {     //funcao para ler a configuracao
     FILE* fp;
     fp = fopen(ficheiro, "r");    //abre o ficheiro para ler
 
-    if(fp == NULL){
-        perror("erro: ficheiro nao existe. \n");
-    }
-    else {
-
+    if(fp != NULL){
         // Obtem o tamanho do ficheiro:
         fseek(fp, 0, SEEK_END);
         long fileSize = ftell(fp);
@@ -315,15 +311,15 @@ int readConfiguracao(char ficheiro[]) {     //funcao para ler a configuracao
 
         int i = 0;
         char *p = strtok(buffer, "\n");
-        char *lines[25];
+        char *linhas[25];
         while (p != NULL) {
-            lines[i++] = p;
+            linhas[i++] = p;
             p = strtok(NULL, "\n");
         }
         char *array[2];
         char *values[16];
         for (int index = 0; index < 16; index++) {
-            char *aux = strtok(lines[index], ":");
+            char *aux = strtok(linhas[index], ":");
             i = 0;
             while (aux != NULL) {
                 array[i++] = aux;
@@ -360,7 +356,10 @@ int readConfiguracao(char ficheiro[]) {     //funcao para ler a configuracao
         printf( "Prob ser vip: %f \n", config.probSerVIP);
         printf( "Prob desistir: %f \n", config.probDesistir);
         printf( "Prob ser mulher: %f \n", config.probSerMulher);
-        */  
+        */
+    }
+    else {
+        perror("erro: ficheiro nao existe. \n");  
     }   
 }
 
