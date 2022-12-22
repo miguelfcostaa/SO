@@ -107,15 +107,27 @@ int randomNumber(int max, int min) {
 }
 
 char *defineTipoPessoa(struct pessoa *people){
-    char *tipoPessoa = malloc(sizeof(40));;
+    char *tipoPessoa = malloc(35);;
 
     if(people->vip == 1){
-        sprintf(tipoPessoa, "A pessoa VIP com o id %d", people->id);
-        return tipoPessoa;
+        if(people->sexualidade == MULHER) {
+            sprintf(tipoPessoa, "A mulher VIP com o id %d", people->id);
+            return tipoPessoa;
+        }
+        else if (people->sexualidade == HOMEM){
+            sprintf(tipoPessoa, "O homem VIP com o id %d", people->id);
+            return tipoPessoa;
+        }
     }
     else {
-        sprintf(tipoPessoa, "A pessoa com o id %d", people->id);
-        return tipoPessoa;
+        if(people->sexualidade == MULHER) {
+            sprintf(tipoPessoa, "A mulher com o id %d", people->id);
+            return tipoPessoa;
+        }
+        else if (people->sexualidade == HOMEM){
+            sprintf(tipoPessoa, "O homem com o id %d", people->id);
+            return tipoPessoa;
+        }
     }
 
 }
@@ -189,8 +201,9 @@ void FilaDeEspera(struct pessoa *people) {
         pthread_mutex_unlock(&mutexFilaDeEspera);
         if (nPessoasNaFila < config.tamanhoMaxFila1) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             tipoDePessoa = defineTipoPessoa(people);
-            enviaInformacao(sockfd, people->id, 0, 0, 1);
             printf("%s chegou a fila 1.\n", tipoDePessoa);
+            enviaInformacao(sockfd, people->id, 0, 0, 1);
+            nPessoasNaFila++;
             free(tipoDePessoa);
             if (people->nPessoasAFrenteDesistir < nPessoasNaFila) { // Se o numero de pessoas na fila de espera for maior que o numero de pessoas a frente que essa pessoa admite, ela desiste
                 tipoDePessoa = defineTipoPessoa(people);
@@ -206,8 +219,9 @@ void FilaDeEspera(struct pessoa *people) {
         pthread_mutex_unlock(&mutexFilaDeEspera);
         if (nPessoasNaFila < config.tamanhoMaxFila2) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             tipoDePessoa = defineTipoPessoa(people);
-            enviaInformacao(sockfd, people->id, 0, 0, 2);
             printf("%s chegou a fila 2.\n", tipoDePessoa);
+            enviaInformacao(sockfd, people->id, 0, 0, 2);
+            nPessoasNaFila++;
             free(tipoDePessoa);
             if (people->nPessoasAFrenteDesistir < nPessoasNaFila) { // Se o numero de pessoas na fila de espera for maior que o numero de pessoas a frente que essa pessoa admite, ela desiste
                 tipoDePessoa = defineTipoPessoa(people);
