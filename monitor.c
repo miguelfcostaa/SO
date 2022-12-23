@@ -67,22 +67,23 @@ void recebeInformacao(int newsockfd) {
     int pessoaID = 0;
     int tempoMedido = 0;
     int estado = 0;
-    int acontecimento = 0;; 
+    int acontecimento = 0;
+    int zona = 0; 
 
     //(pessoaID, timestamp, estado, acontecimento)
 
-    if ((pessoaID == 0) && (tempoMedido == 0) && (acontecimento == 0)) {
+    if ((pessoaID == 0) && (tempoMedido == 0) && (acontecimento == 0) && (zona == 0)) {
         if (estado == 0){
             printf("Bem vindo! A simulação comecou!\n");
         }
         
 	}
-    while (estado != 99) {
+    while (!acabouSimulacao) {
 
         char buffer[MAXLINE+1];
         mensagem = recv(newsockfd, buffer, MAXLINE, 0); 							                                        //linhaRcebe vai ter o conteudo do socket
                         
-        sscanf(buffer,"%d %d %d %d", &pessoaID, &tempoMedido, &estado, &acontecimento);	  
+        sscanf(buffer,"%d %d %d %d %d", &pessoaID, &tempoMedido, &estado, &acontecimento, &zona);	  
 
         switch (estado)
         {
@@ -97,8 +98,9 @@ void recebeInformacao(int newsockfd) {
                 }
                 break;
 
-            case 2: // Pessoa saiu da fila, porque desistiu
+            case 2: // uma pessoa desistiu
                 printf("Uma pessoa desistiu \n");
+                nPessoasTotal--;
                 if (acontecimento == 1) {
                     nPessoasFila1--;
                 } 
@@ -107,8 +109,24 @@ void recebeInformacao(int newsockfd) {
                 }
                 break;
 
-            case 3:
-
+            case 3: // uma pessoa entrou na discoteca
+                printf("Uma pessoa entrou na discoteca \n");
+                nPessoasTotal--;
+                if (acontecimento == 1) {
+                    nPessoasFila1--;
+                } 
+                else if (acontecimento == 2) {
+                    nPessoasFila2--;
+                }
+                if (zona == ZONA_A){
+                    nPessoasZonaA++;
+                }
+                else if (zona == ZONA_B){
+                    nPessoasZonaB++;
+                }
+                else if (zona == PADARIA){
+                    nPessoasPadaria++;
+                }
                 break;
                 
             default:

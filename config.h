@@ -2,7 +2,6 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <semaphore.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -12,13 +11,23 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdbool.h>
-
+#include <semaphore.h>
 
 #define UNIXSTR_PATH "/tmp/s.2079120"
 #define MAXLINE 1024    //tamanho maximo do buffer
 #define SIZE_TASKS 100000
 #define TRUE 1
 #define FALSE 0
+
+//CORES
+#define STOP "\x1B[0m"
+#define PURPLE "\x1B[35m"
+#define YELLOW "\x1B[33m"
+#define BLUE "\x1B[34m"
+#define CYAN "\x1B[36m"
+#define RED "\x1B[31m"
+#define GREEN "\x1B[32m"
+
 
 
 //Estado pessoa
@@ -66,20 +75,22 @@ struct pessoa {
     int id;
     int sexualidade; //MULHER - 0 | HOMEM - 1
     int fila;
+    int naFila;
     int zona; //0 - Zona A | 1 - Zona B | 2 - Padaria 
     int vip; 
     int desistiu;
     int nPessoasAFrenteDesistir;
+    int tempoChegada;
+    int tempoMaxEsperaP;
+    int tempoNaFila;
     int estado; // 0 = espera | 1 = coma
     int resultadoTeste; //0 = nao fez teste | 1 = morreu | 2 = sobreviveu
-    int tempoMaxEsperaP;
 };
 
 
 struct Fila1 {
     int nPessoasEspera;
     sem_t filaEspera;
-    int nFilasDisponiveis;
 };
 
 struct Fila2 {
@@ -87,7 +98,6 @@ struct Fila2 {
     int nPessoasPrioritariasEspera;
     sem_t filaEsperaPrioritaria;
     sem_t filaEsperaNormal;
-    int nFilasDisponiveis;
 };
 
 

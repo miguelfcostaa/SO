@@ -12,3 +12,4 @@ monitor: monitor.c config.h
 
 clean: 
 		rm *.o simulador monitor
+

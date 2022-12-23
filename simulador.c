@@ -4,6 +4,7 @@
 int sockfd = 0; // inicia socket
 int pessoaID = 0;
 int tempoDecorrido = 0; // tempo decorrido em segundos
+int minutosPassados = 0;
 
 //configuracao e filas
 struct configuracao config;
@@ -80,11 +81,11 @@ int criaSocket() {
 }
 
 // funcao que envia mensagens para o monitor
-void enviaInformacao(int sockfd, int pessoa_id, int tempoMedido, int estado, int acontecimento) {
+void enviaInformacao(int sockfd, int pessoa_id, int tempoMedido, int estado, int acontecimento, int zona) {
     sem_wait(&semaforoEnviaInformacao);
     char buffer[MAXLINE];
     int numero = 0;
-    sprintf(buffer, "%d %d %d %d", pessoa_id, tempoMedido, estado, acontecimento);
+    sprintf(buffer, "%d %d %d %d %d", pessoa_id, tempoMedido, estado, acontecimento, zona);
     numero = strlen(buffer) + 1;    
     if(send(sockfd, buffer, numero, 0) != numero){
         perror("erro: nao foi possivel enviar os dados. \n");   
@@ -140,9 +141,11 @@ struct pessoa criaPessoa() {
 
     people.id = pessoaID;
     people.sexualidade = randomNumber(HOMEM, MULHER);
-    people.fila = randomNumber(2, 1);
+    //people.fila = randomNumber(2, 1);
+    people.fila = 1;
     people.zona = randomNumber(2, 0);
-    people.vip = probabilidade(config.probSerVIP);
+    //people.vip = probabilidade(config.probSerVIP);
+    people.vip = 0;
     people.desistiu = FALSE;
 
 
@@ -150,10 +153,10 @@ struct pessoa criaPessoa() {
         people.fila = 2;
     }
     if (people.fila == 1) {
-        people.nPessoasAFrenteDesistir = randomNumber(config.tamanhoMaxFila1, (config.tamanhoMaxFila1 * 2) / 3);
+        people.nPessoasAFrenteDesistir = randomNumber(config.tamanhoMaxFila1, (config.tamanhoMaxFila1 * 2) / 6);
     } 
     else if (people.fila == 2) {
-        people.nPessoasAFrenteDesistir = randomNumber(config.tamanhoMaxFila2, (config.tamanhoMaxFila2 * 2) / 3);
+        people.nPessoasAFrenteDesistir = randomNumber(config.tamanhoMaxFila2, (config.tamanhoMaxFila2 * 2) / 6);
     }
     if (people.zona == ZONA_A) { //ZONA A
         people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxZonaA * 2), config.tamanhoMaxZonaA);
@@ -164,6 +167,7 @@ struct pessoa criaPessoa() {
     if (people.zona == PADARIA) { //ZONA DA PADARIA
         people.nPessoasAFrenteDesistir = randomNumber((config.tamanhoMaxPadaria * 2), config.tamanhoMaxPadaria);
     }
+    people.naFila = TRUE;
     people.estado = ESPERA;
     people.resultadoTeste = NAO_FEZ_TESTE;
     people.tempoMaxEsperaP = randomNumber(config.tempoMaxEspera, (config.tempoMaxEspera * 2) / 3);
@@ -191,67 +195,122 @@ void FilaDeEspera(struct pessoa *people) {
     //long timestamp = minutosDecorridos;
     //int index, tempoEspera;
     //int valorSemaforo; // Fica com o tamanho do semaforo
+    int timestamp = tempoDecorrido;
+    int waitTime;
     char *tipoDePessoa;
-    
-    if (people->fila == 1) { // CENTRO TESTES 1
+
+    if (people->fila == 1) {
         pthread_mutex_lock(&mutexFilaDeEspera);
         int nPessoasNaFila = filas1.nPessoasEspera;
         pthread_mutex_unlock(&mutexFilaDeEspera);
+
         if (nPessoasNaFila < config.tamanhoMaxFila1) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             tipoDePessoa = defineTipoPessoa(people);
-            printf("%s chegou a fila 1.\n", tipoDePessoa);
-            enviaInformacao(sockfd, people->id, 0, 0, 1);
+            printf( CYAN "%s chegou a fila 1 as %d \n" STOP, tipoDePessoa, timestamp);
+            enviaInformacao(sockfd, people->id, timestamp, 0, 1, people->zona);
             free(tipoDePessoa);
-            if (people->nPessoasAFrenteDesistir > nPessoasNaFila) { 
-                //pessoa->tempoChegadaFilaEspera = timestamp;
+            pthread_mutex_lock(&mutexVariaveisSimulacao);
+            waitTime = (randomNumber((config.tempoMedioChegada * 2), (config.tempoMedioEspera *2) /3));
+            pthread_mutex_unlock(&mutexVariaveisSimulacao);
+            printf("tempo max espera pessoa: %d \n", people->tempoMaxEsperaP);
+            printf("tempo de espera: %d \n", waitTime);
+            if (people->nPessoasAFrenteDesistir < nPessoasNaFila)  //O numero de pessoas na fila é superior ao numero que a pessoa admite ter a sua frente, entao ela desiste
+            {
+                people->desistiu = TRUE;
+                tipoDePessoa = defineTipoPessoa(people);
+                printf(YELLOW "%s desistiu da fila do 1 porque tinha muita gente a frente.\n" STOP, tipoDePessoa);
+                free(tipoDePessoa);
+                enviaInformacao(sockfd, people->id, timestamp, 2, 1, people->zona);
+                pthread_mutex_lock(&mutexFilaDeEspera);
+                filas1.nPessoasEspera--;
+                pthread_mutex_unlock(&mutexFilaDeEspera);
+            }
+            else if (people->nPessoasAFrenteDesistir > nPessoasNaFila) 
+            { 
                 pthread_mutex_lock(&mutexFilaDeEspera);
                 filas1.nPessoasEspera++; //aumenta o numero de pessoas a espera na fila 1
-                printf("pessoas na fila: %d \n", filas1.nPessoasEspera);
+                //printf("pessoas na fila1: %d \n", filas1.nPessoasEspera);
                 pthread_mutex_unlock(&mutexFilaDeEspera);
-                //sem_wait(&centroTestes1.filaEspera);
-                //pthread_mutex_lock(&mutexVariaveisSimulacao);
-                //tempoEspera = minutosDecorridos - pessoa->tempoChegadaFilaEspera; // Calculado e registado o tempo de maximo de espera dessa pessoa
-                //pthread_mutex_unlock(&mutexVariaveisSimulacao);
+                //sem_wait(&filas1.filaEspera); 
+                if(waitTime > people->tempoMaxEsperaP)  //o tempo que esperou ultrapassou o limite, e a pessoa foi embora
+                {
+                    people->desistiu = TRUE; 
+                    tipoDePessoa = defineTipoPessoa(people);
+                    printf( YELLOW "%s desistiu da fila do 1 porque esteve muito tempo a espera.\n" STOP, tipoDePessoa);
+                    free(tipoDePessoa);
+                    enviaInformacao(sockfd, people->id, timestamp, 2, 1, people->zona);
+                    pthread_mutex_lock(&mutexFilaDeEspera);
+                    filas1.nPessoasEspera--;
+                    pthread_mutex_unlock(&mutexFilaDeEspera);
+                }        
+                else if ((waitTime < people->tempoMaxEsperaP))
+                {               
+                    tipoDePessoa = defineTipoPessoa(people);
+                    printf(GREEN "%s entrou na discoteca, as %d \n" STOP, tipoDePessoa, waitTime);
+                    free(tipoDePessoa);
+                    enviaInformacao(sockfd, people->id, timestamp, 3, 1, people->zona);
+                    pthread_mutex_lock(&mutexFilaDeEspera);
+                    filas1.nPessoasEspera--;
+                    pthread_mutex_unlock(&mutexFilaDeEspera);
+                    pthread_mutex_lock(&mutexVariaveisSimulacao);
+                    waitTime = timestamp - (randomNumber((config.tempoMedioChegada * 2), (config.tempoMedioEspera *2) /3));
+                    pthread_mutex_unlock(&mutexVariaveisSimulacao);
+                } 
             }
-            //O numero de pessoas na fila é superior ao numero que a pessoa admite ter a sua frente, entao ela desiste
-            else if (people->nPessoasAFrenteDesistir < nPessoasNaFila){ 
-                tipoDePessoa = defineTipoPessoa(people);
-                printf("%s desistiu da fila do 1 porque tinha muita gente a frente.\n", tipoDePessoa);
-                free(tipoDePessoa);
-                people->desistiu = TRUE;
-            }
+            
+        }
+        else {
+            pthread_mutex_unlock(&mutexFilaDeEspera);
+            people->desistiu = TRUE; 
         }
     }
     else if (people->fila == 2) {
         pthread_mutex_lock(&mutexFilaDeEspera);
-        int nPessoasNaFila = filas2.nPessoasNormalEspera;
-        pthread_mutex_unlock(&mutexFilaDeEspera);
-        if (nPessoasNaFila < config.tamanhoMaxFila2) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
+        int nPessoasNaFila2 = filas2.nPessoasNormalEspera;
+        pthread_mutex_unlock(&mutexFilaDeEspera);    
+        if (nPessoasNaFila2 < config.tamanhoMaxFila2) { // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             tipoDePessoa = defineTipoPessoa(people);
-            printf("%s chegou a fila 2.\n", tipoDePessoa);
-            enviaInformacao(sockfd, people->id, 0, 0, 2);
+            printf("%s chegou a fila 2. \033[0m \n", tipoDePessoa);
+            enviaInformacao(sockfd, people->id, timestamp, 0, 2, people->zona);
             free(tipoDePessoa);
-            if (people->nPessoasAFrenteDesistir > nPessoasNaFila) { // Se o numero de pessoas na fila de espera for maior que o numero de pessoas a frente que essa pessoa admite, ela desiste
-                //pessoa->tempoChegadaFilaEspera = timestamp;
+
+            if (people->nPessoasAFrenteDesistir > nPessoasNaFila2) { 
                 pthread_mutex_lock(&mutexFilaDeEspera);
-                filas2.nPessoasNormalEspera++; //aumenta o numero de pessoas a espera na fila 1
-                //printf("pessoas na fila: %d \n", filas2.nPessoasNormalEspera);
+                filas2.nPessoasNormalEspera++; //aumenta o numero de pessoas a espera na fila 2
+                //printf("pessoas na fila2: %d \n", nPessoasNaFila2);
                 pthread_mutex_unlock(&mutexFilaDeEspera);
-                //sem_wait(&centroTestes1.filaEspera);
-                //pthread_mutex_lock(&mutexVariaveisSimulacao);
-                //tempoEspera = minutosDecorridos - pessoa->tempoChegadaFilaEspera; // Calculado e registado o tempo de maximo de espera dessa pessoa
-                //pthread_mutex_unlock(&mutexVariaveisSimulacao);
             }
             //O numero de pessoas na fila é superior ao numero que a pessoa admite ter a sua frente, entao ela desiste
-            else if (people->nPessoasAFrenteDesistir < nPessoasNaFila){
+            else if (people->nPessoasAFrenteDesistir < nPessoasNaFila2){
                 tipoDePessoa = defineTipoPessoa(people);
-                printf("%s desistiu da fila do 2 porque tinha muita gente a frente.\n", tipoDePessoa);
+                printf("\033[0;32m%s desistiu da fila do 2 porque tinha muita gente a frente.\n", tipoDePessoa);
                 free(tipoDePessoa);
+                enviaInformacao(sockfd, people->id, timestamp, 2, 2, people->zona);
                 people->desistiu = TRUE;
+                pthread_mutex_lock(&mutexFilaDeEspera);
+                filas2.nPessoasNormalEspera--;
+                pthread_mutex_unlock(&mutexFilaDeEspera);
+            }
+            else if(people->tempoNaFila > people->tempoMaxEsperaP) { //o tempo que esperou ultrapassou o limite, e a pessoa foi embora
+                people->desistiu = TRUE; 
+                tipoDePessoa = defineTipoPessoa(people);
+                printf("\033[0;32m%s desistiu da fila do 2 porque esteve muito tempo a espera.\n", tipoDePessoa);
+                free(tipoDePessoa);
+                enviaInformacao(sockfd, people->id, timestamp, 2, 2, people->zona);
+                pthread_mutex_lock(&mutexFilaDeEspera);
+                filas2.nPessoasNormalEspera--;
+                pthread_mutex_unlock(&mutexFilaDeEspera);
             }
         }
+        else {
+            pthread_mutex_unlock(&mutexFilaDeEspera);
+            people->desistiu = TRUE; 
+        }
     }
-    
+    else {
+        pthread_mutex_unlock(&mutexFilaDeEspera);
+        people->desistiu = TRUE; 
+    }
 }
 
 
@@ -261,7 +320,7 @@ void Pessoa(void *ptr) {
 
     while (TRUE) {
         FilaDeEspera(&pessoa);
-        if (!pessoa.desistiu) {
+        if (pessoa.desistiu == TRUE) {
             // sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 3, "Z");
             // enviarInformacao(mensagem);
             //int tipoTeste = -1;
@@ -273,7 +332,7 @@ void Pessoa(void *ptr) {
             /*if (pessoa.estado)
 
             if (pessoa.estadoTeste == POSITIVO) {
-                printf(AMARELO "Pessoa %d testou positivo \n" RESET, pessoa.id);
+                printf(YELLOW "Pessoa %d testou positivo \n" STOP, pessoa.id);
                 sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 8, "Z");
                 enviarInformacao(mensagem);
                 sem_init(&pessoa.semaforoPessoa, 0, 0);
@@ -282,14 +341,14 @@ void Pessoa(void *ptr) {
                 break;
             } 
             else if (pessoa.estadoTeste == NEGATIVO) {
-                printf(AMARELO "Pessoa %d testou negativo \n" RESET, pessoa.id);
+                printf(YELLOW "Pessoa %d testou negativo \n" STOP, pessoa.id);
                 sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 9, 0);
                 enviarInformacao(mensagem);
                 pessoa.estado = SOBREVIVEU;
                 break;
             } 
             else {
-                printf(AMARELO "Pessoa %d testou inconclusivo \n" RESET, pessoa.id);
+                printf(YELLOW "Pessoa %d testou inconclusivo \n" STOP, pessoa.id);
                 sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 12, "Z");
                 enviarInformacao(mensagem);
                 pessoa.estado = ESPERA;
@@ -307,8 +366,8 @@ void Pessoa(void *ptr) {
                 configuracao
                     .probabilidadeNaoIdosoPrecisaHospital)) { // Vai para o Hospital
         pessoa.estado = HOSPITAL;
-        printf(CIANO
-                "A pessoa com id %d foi transportada para o hospital.\n" RESET,
+        printf(CYAN
+                "A pessoa com id %d foi transportada para o hospital.\n" STOP,
                 pessoa.id);
         sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 4, "Z");
         enviarInformacao(mensagem);
@@ -398,7 +457,7 @@ int readConfiguracao(char ficheiro[]) {     //funcao para ler a configuracao
 int simulacao(char* configFile) {
 
     readConfiguracao(configFile);
-    iniciarSemaforosETrincos();
+    semaforosTrincos();
     while (config.tempoLimiteSimulacao != tempoDecorrido)
     {
         tempoDecorrido++;
@@ -409,31 +468,33 @@ int simulacao(char* configFile) {
                 printf("Erro na criação da tarefa\n");
                 exit(1);
             }
-            pthread_mutex_lock(&mutexVariaveisSimulacao);
-            sleep();
-            
+            pthread_mutex_lock(&mutexVariaveisSimulacao);          
+            sleep(1);
         }
     }
     if (config.tempoLimiteSimulacao == tempoDecorrido) {
-        enviaInformacao(sockfd, 0, 0, 99, 0); 
+        enviaInformacao(sockfd, 0, 0, 99, 0, 0); 
     }
 }
 
 
 
-void iniciarSemaforosETrincos() {
+void semaforosTrincos() {       
+    if (pthread_mutex_init(&mutexVariaveisSimulacao, NULL) != 0) {
+        printf("Inicializacao do trinco falhou.\n");
+    }
     if (pthread_mutex_init(&mutexCriarPessoa, NULL) != 0) {
         printf("Inicializacao do trinco falhou.\n");
     }
     if (pthread_mutex_init(&mutexFilaDeEspera, NULL) != 0) {
         printf("Inicializacao do trinco falhou.\n");
     }
-    if (pthread_mutex_init(&mutexVariaveisSimulacao, NULL) != 0) {
-        printf("Inicializacao do trinco falhou.\n");
-    }
+
+    sem_init(&filas1.filaEspera, 0, 0);
     sem_init(&semaforoEnviaInformacao, 0, 1);
-    /*sem_init(&centroTestes1.filaEspera, 0, 0);
-    
+    sem_init(&filas2.filaEsperaPrioritaria, 0, 0);
+    sem_init(&filas2.filaEsperaNormal, 0, 0);
+    /*
     tempoCooldownPontosTestagemCentro1 =
         (int *)calloc(configuracao.numeroPontosTestagemCentro1, sizeof(int));
     int index = 0;
