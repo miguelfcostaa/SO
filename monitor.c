@@ -3,6 +3,7 @@
 int acabouSimulacao = FALSE;
 
 int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZonaA = 0, nPessoasZonaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
+nPessoasEmComa = 0;
 
 
 //<<<<<<<<<<<<<<<<<<<<<<< SOCKET >>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -98,7 +99,7 @@ void recebeInformacao(int newsockfd) {
                 }
                 break;
 
-            case 2: // uma pessoa desistiu
+            case 1: // uma pessoa desistiu
                 printf("Uma pessoa desistiu \n");
                 nPessoasTotal--;
                 if (acontecimento == 1) {
@@ -109,7 +110,7 @@ void recebeInformacao(int newsockfd) {
                 }
                 break;
 
-            case 3: // uma pessoa entrou na discoteca
+            case 2: // uma pessoa entrou na discoteca
                 printf("Uma pessoa entrou na discoteca \n");
                 nPessoasTotal--;
                 if (acontecimento == 1) {
@@ -129,6 +130,10 @@ void recebeInformacao(int newsockfd) {
                 }
                 break;
                 
+            case 3: //uma pessoa entrou em coma
+                printf("Uma pessoa entrou em coma \n");
+                nPessoasEmComa++;
+                break;
             default:
                 
                 break;
@@ -195,7 +200,7 @@ void escreveFeedback() {
 		fprintf(fp, "Pessoas na zona A: %d\n", nPessoasZonaA);
 		fprintf(fp, "Pessoas na zona B: %d\n", nPessoasZonaB);
 		fprintf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
-		fprintf(fp, "Tempo medio de espera (minutos): %d\n", tempoMedio);
+		fprintf(fp, "Pessoas em coma: %d\n", nPessoasEmComa);
 		fprintf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 		fclose(fp);
 	}
@@ -216,7 +221,7 @@ void imprimeFeedback(){
 	printf("Pessoas na zona A: %d\n", nPessoasZonaA);
 	printf("Pessoas na zona B: %d\n", nPessoasZonaB);
 	printf("Pessoas na Padaria: %d\n", nPessoasPadaria);
-	printf("Tempo medio de espera (minutos): %d\n", tempoMedio);	
+	printf("Pessoas em coma: %d\n", nPessoasEmComa);	
 	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	escreveFeedback();
 }

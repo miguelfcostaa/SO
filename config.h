@@ -68,6 +68,7 @@ struct configuracao {
     float probDesistir;
     float probSerMulher;
     float probSerHomem;
+    float probEntrarComa;
     float probMorrerComa;
 };
 

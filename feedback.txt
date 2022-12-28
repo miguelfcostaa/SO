@@ -1,11 +1,11 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Estado atual => Simulacao a decorrer!
 	 DIA 0
-Pessoas (total): 20
-Pessoas a espera na fila 1: 20
-Pessoas a espera na fila 2: 0
+Pessoas (total): 15
+Pessoas a espera na fila 1: 0
+Pessoas a espera na fila 2: 15
 Pessoas na zona A: 4
-Pessoas na zona B: 3
-Pessoas na Padaria: 4
-Tempo medio de espera (minutos): 0
+Pessoas na zona B: 0
+Pessoas na Padaria: 0
+Pessoas em coma: 3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
