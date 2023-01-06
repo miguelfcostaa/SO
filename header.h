@@ -21,6 +21,7 @@
 
 //CORES
 #define STOP "\x1B[0m"
+#define WHITE "\033[0;37m"
 #define PURPLE "\x1B[35m"
 #define YELLOW "\x1B[33m"
 #define BLUE "\x1B[34m"
@@ -29,18 +30,19 @@
 #define GREEN "\x1B[32m"
 
 
-
 //Estado pessoa
 #define ESPERA 0
-#define COMA 1
-#define MULHER 2
-#define HOMEM 3
+#define ENTROU 1
+#define COMA 2
+#define MULHER 3
+#define HOMEM 4
 
 
-//Resultado do teste
+//TESTE DE COMA
 #define NAO_FEZ_TESTE 0
-#define MORREU 1
-#define SOBREVIVEU 2
+#define LEVANDO_SORO 1
+#define MORREU 2
+#define SOBREVIVEU 3
 
 //Zona
 #define ZONA_A 0
@@ -63,13 +65,14 @@ struct configuracao {
     int tempoMedioChegada;
     int tempoMedioEspera;
     int tempoMaxEspera;
-    int tempoFazerTeste;
+    int tempoLevarSoro;
     float probSerVIP;
     float probDesistir;
     float probSerMulher;
     float probSerHomem;
     float probEntrarComa;
     float probMorrerComa;
+    float probIrComer;
 };
 
 struct pessoa {
@@ -85,21 +88,34 @@ struct pessoa {
     int tempoMaxEsperaP;
     int tempoNaFila;
     int estado; // 0 = espera | 1 = coma
-    int resultadoTeste; //0 = nao fez teste | 1 = morreu | 2 = sobreviveu
+    int teste; //0 = nao fez teste | 1 - esta a levar soro | 2 = morreu | 3 = sobreviveu
 };
 
 
 struct Fila1 {
     int nPessoasEspera;
-    sem_t filaEspera;
 };
 
 struct Fila2 {
     int nPessoasNormalEspera;
     int nPessoasPrioritariasEspera;
-    sem_t filaEsperaPrioritaria;
-    sem_t filaEsperaNormal;
 };
+
+struct ZonaA
+{
+    int nPessoas;
+};
+
+struct ZonaB
+{
+    int nPessoas;
+};
+
+struct Padaria
+{
+    int nPessoas;
+};
+
 
 
 

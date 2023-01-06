@@ -1,9 +1,9 @@
-#include "config.h"
+#include "header.h"
 
 int acabouSimulacao = FALSE;
 
 int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZonaA = 0, nPessoasZonaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
-nPessoasEmComa = 0;
+nPessoasEmComa = 0; nPessoasComaMorreram = 0; nPessoasComaSobreviveram = 0;
 
 
 //<<<<<<<<<<<<<<<<<<<<<<< SOCKET >>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -71,7 +71,7 @@ void recebeInformacao(int newsockfd) {
     int acontecimento = 0;
     int zona = 0; 
 
-    //(pessoaID, timestamp, estado, acontecimento)
+    //(pessoaID, timestamp, estado, acontecimento, zona)
 
     if ((pessoaID == 0) && (tempoMedido == 0) && (acontecimento == 0) && (zona == 0)) {
         if (estado == 0){
@@ -108,11 +108,22 @@ void recebeInformacao(int newsockfd) {
                 else if (acontecimento == 2) {
                     nPessoasFila2--;
                 }
+                else if (acontecimento == 3) { //a pessoa cansou-se e foi embora
+                    if (zona == ZONA_A){
+                        nPessoasZonaA--;
+                    }
+                    else if (zona == ZONA_B){
+                        nPessoasZonaB--;
+                    }
+                    else if (zona == PADARIA){
+                        nPessoasPadaria--;
+                    }
+                    break;
+                }
                 break;
 
             case 2: // uma pessoa entrou na discoteca
                 printf("Uma pessoa entrou na discoteca \n");
-                nPessoasTotal--;
                 if (acontecimento == 1) {
                     nPessoasFila1--;
                 } 
@@ -129,13 +140,45 @@ void recebeInformacao(int newsockfd) {
                     nPessoasPadaria++;
                 }
                 break;
-                
+
             case 3: //uma pessoa entrou em coma
                 printf("Uma pessoa entrou em coma \n");
                 nPessoasEmComa++;
+                if (zona == ZONA_A){
+                    nPessoasZonaA--;
+                }
+                else if (zona == ZONA_B){
+                    nPessoasZonaB--;
+                }
+                else if (zona == PADARIA){
+                    nPessoasPadaria--;
+                }
+                break;
+
+            case 4: 
+                printf("Uma pessoa entrou na discoteca sem esperar \n");
+                nPessoasTotal++;
+                if (zona == ZONA_A){
+                    nPessoasZonaA++;
+                }
+                else if (zona == ZONA_B){
+                    nPessoasZonaB++;
+                }
+                else if (zona == PADARIA){
+                    nPessoasPadaria++;
+                }
+                break;
+            case 5:
+                printf("Uma pessoa sobriveu a coma \n");
+                nPessoasEmComa--;
+                nPessoasComaSobreviveram++;
+                break;
+            case 6:
+                printf("Uma pessoa morreu \n");
+                nPessoasEmComa--;
+                nPessoasComaMorreram++;
                 break;
             default:
-                
                 break;
         }
         imprimeFeedback();
@@ -201,6 +244,8 @@ void escreveFeedback() {
 		fprintf(fp, "Pessoas na zona B: %d\n", nPessoasZonaB);
 		fprintf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
 		fprintf(fp, "Pessoas em coma: %d\n", nPessoasEmComa);
+        fprintf(fp, "Pessoas que morreram de coma: %d\n", nPessoasComaMorreram);
+        fprintf(fp, "Pessoas que sobreviveram de coma: %d\n", nPessoasComaSobreviveram);
 		fprintf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 		fclose(fp);
 	}
@@ -221,7 +266,9 @@ void imprimeFeedback(){
 	printf("Pessoas na zona A: %d\n", nPessoasZonaA);
 	printf("Pessoas na zona B: %d\n", nPessoasZonaB);
 	printf("Pessoas na Padaria: %d\n", nPessoasPadaria);
-	printf("Pessoas em coma: %d\n", nPessoasEmComa);	
+	printf("Pessoas em coma: %d\n", nPessoasEmComa);
+    printf("Pessoas que morreram de coma: %d\n", nPessoasComaMorreram);
+    printf("Pessoas que sobreviveram de coma: %d\n", nPessoasComaSobreviveram);	
 	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	escreveFeedback();
 }
