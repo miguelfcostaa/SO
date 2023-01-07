@@ -178,17 +178,16 @@ void recebeInformacao(int newsockfd) {
                 nPessoasEmComa--;
                 nPessoasComaMorreram++;
                 break;
+
+            case 99:
+                printf("O tempo limite da simulacao foi atingido.\n");
+                acabouSimulacao = TRUE;
+                break;
             default:
                 break;
         }
-        imprimeFeedback();
-            
-    }
-    if(estado == 99){ 
-        printf("O tempo limite da simulacao foi atingido.\n");
-        acabouSimulacao = TRUE;
-    }
-              
+        imprimeFeedback(); 
+    }            
 }
 
 

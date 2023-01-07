@@ -2,9 +2,10 @@
 
 //Variaveis globais
 int sockfd = 0; // inicia socket
-int pessoaID = 0;
+int pessoaID = 1;
 int tempoDecorrido = 0; // tempo decorrido em segundos
 int minutosPassados = 0;
+int nPessoasNaDiscoteca = 0;
 
 //configuracao e filas
 struct configuracao config;
@@ -22,6 +23,9 @@ pthread_mutex_t mutexFilaDeEspera;
 pthread_mutex_t mutexVariaveisSimulacao;
 sem_t semaforoEnviaInformacao;
 sem_t semaforoDiscoteca;
+sem_t semaforoZonaA;
+sem_t semaforoZonaB;
+sem_t semaforoPadaria;
 
 
 //Variaveis do ficheiro de simulacao
@@ -93,7 +97,7 @@ void enviaInformacao(int sockfd, int pessoa_id, int tempoMedido, int estado, int
     if(send(sockfd, buffer, numero, 0) != numero){
         perror("erro: nao foi possivel enviar os dados. \n");   
     }
-    sleep(1);
+    usleep(10000);
     sem_post(&semaforoEnviaInformacao);
 }
 
@@ -169,11 +173,11 @@ struct pessoa criaPessoa() {
     pthread_mutex_lock(&mutexCriarPessoa);
 
     struct pessoa people;
-
+    
     people.id = pessoaID;
     people.sexualidade = randomNumber(HOMEM, MULHER);
     people.fila = 1;
-    people.zona = randomNumber(2, 0);
+    people.zona = ZONA_A;
     //people.vip = probabilidade(config.probSerVIP);
     people.vip = 0;
     people.desistiu = FALSE;
@@ -220,60 +224,70 @@ void FilaDeEspera(struct pessoa *people) {
     char *tipoDePessoa;
     char *zonaP;
 
-    int pessoasNaDisco;
-    sem_getvalue(&semaforoDiscoteca, &pessoasNaDisco);
+    int semDisco;
+    int semZonaA;
+    int semZonaB;
+    int semPadaria;
+    
+    sem_getvalue(&semaforoDiscoteca, &semDisco);
+    sem_getvalue(&semaforoZonaA, &semZonaA);
+    sem_getvalue(&semaforoZonaB, &semZonaB);
+    sem_getvalue(&semaforoPadaria, &semPadaria);
 
-    if (pessoasNaDisco > 0) { //a discoteca nao esta cheia por isso nao percisa de esperar na fila
-        sem_wait(&semaforoDiscoteca);
-        if (people->fila == 1) {
-            pthread_mutex_lock(&mutexFilaDeEspera);
-            int nPessoasNaFila1 = filas1.nPessoasEspera;
-            pthread_mutex_unlock(&mutexFilaDeEspera);
-            if (nPessoasNaFila1 < config.tamanhoMaxFila1){
-                tipoDePessoa = defineTipoPessoa(people);
-                zonaP = defineZona(people);
-                printf( GREEN "%s chegou a fila 1, já entrou na discoteca e %s \n" STOP, tipoDePessoa, zonaP);
-                free(tipoDePessoa);
-                free(zonaP);
-                enviaInformacao(sockfd, people->id, timestamp, 4, 1, people->zona);
-                people->estado = ENTROU;
-            }
-            else {
+    if (semZonaA != config.tamanhoMaxZonaA) { //a discoteca nao esta cheia por isso nao percisa de esperar na fila
+        sem_post(&semaforoZonaA);
+        if (semDisco > 0) {
+            if (people->fila == 1) {
+                sem_wait(&semaforoDiscoteca);
+                pthread_mutex_lock(&mutexFilaDeEspera);
+                int nPessoasNaFila1 = filas1.nPessoasEspera;
+                nPessoasNaDiscoteca++;
                 pthread_mutex_unlock(&mutexFilaDeEspera);
-                people->desistiu = TRUE; 
+                if (nPessoasNaFila1 < config.tamanhoMaxFila1){
+                    tipoDePessoa = defineTipoPessoa(people);
+                    zonaP = defineZona(people);
+                    printf( GREEN "%s chegou a fila 1, já entrou na discoteca e %s \n" STOP, tipoDePessoa, zonaP);
+                    free(tipoDePessoa);
+                    free(zonaP);
+                    enviaInformacao(sockfd, people->id, timestamp, 4, 1, people->zona);
+                    people->estado = ENTROU;
+                }
+                else {
+                    pthread_mutex_unlock(&mutexFilaDeEspera);
+                    people->desistiu = TRUE; 
+                }
+            }
+            
+            if (people->fila == 2) {
+                sem_wait(&semaforoDiscoteca);
+                pthread_mutex_lock(&mutexFilaDeEspera);
+                int nPessoasNaFila2 = filas2.nPessoasNormalEspera;
+                pthread_mutex_unlock(&mutexFilaDeEspera);
+                if (nPessoasNaFila2 < config.tamanhoMaxFila1){
+                    tipoDePessoa = defineTipoPessoa(people);
+                    zonaP = defineZona(people);
+                    printf( GREEN "%s chegou a fila 2, já entrou na discoteca e %s \n" STOP, tipoDePessoa, zonaP);
+                    free(tipoDePessoa);
+                    free(zonaP);
+                    enviaInformacao(sockfd, people->id, timestamp, 4, 2, people->zona);
+                    people->estado = ENTROU;
+                }
+                else {
+                    pthread_mutex_unlock(&mutexFilaDeEspera);
+                    people->desistiu = TRUE; 
+                }
             }
         }
-        if (people->fila == 2) {
-            pthread_mutex_lock(&mutexFilaDeEspera);
-            int nPessoasNaFila2 = filas2.nPessoasNormalEspera;
-            pthread_mutex_unlock(&mutexFilaDeEspera);
-            if (nPessoasNaFila2 < config.tamanhoMaxFila1){
-                tipoDePessoa = defineTipoPessoa(people);
-                zonaP = defineZona(people);
-                printf( GREEN "%s chegou a fila 2, já entrou na discoteca e %s \n" STOP, tipoDePessoa, zonaP);
-                free(tipoDePessoa);
-                free(zonaP);
-                enviaInformacao(sockfd, people->id, timestamp, 4, 2, people->zona);
-                people->estado = ENTROU;
-            }
-            else {
-                pthread_mutex_unlock(&mutexFilaDeEspera);
-                people->desistiu = TRUE; 
-            }
-        }
-        sem_post(&semaforoDiscoteca);
+    }
+    else if (semZonaA == config.tamanhoMaxZonaA) {
+        printf("!! Zona A cheia! Esperando por uma vaga... !! \n");
+        sem_wait(&semaforoZonaA);
     }
     else { //a discoteca esta cheia e a pessoa vai ter que esperar na fila
-        sem_wait(&semaforoDiscoteca);
         if (people->fila == 1) {
             pthread_mutex_lock(&mutexFilaDeEspera);
             int nPessoasNaFila1 = filas1.nPessoasEspera;
             pthread_mutex_unlock(&mutexFilaDeEspera);
-            pthread_mutex_lock(&mutexPessoasDisco);
-            int nPessoasZonaA = zona_A.nPessoas;
-            int nPessoasZonaB = zona_B.nPessoas;
-            int nPessoasPadaria = padaria.nPessoas;
-            pthread_mutex_unlock(&mutexPessoasDisco);
 
             if (nPessoasNaFila1 < config.tamanhoMaxFila1) // Se o numero de pessoas na fila de espera for menor que o tamanho da fila avança
             {
@@ -287,6 +301,7 @@ void FilaDeEspera(struct pessoa *people) {
                 */
                 if (people->nPessoasAFrenteDesistir < nPessoasNaFila1) //O numero de pessoas na fila é superior ao numero que a pessoa admite ter a sua frente, entao ela desiste
                 {
+                    sem_post(&semaforoDiscoteca);
                     pthread_mutex_lock(&mutexFilaDeEspera);
                     filas1.nPessoasEspera--;
                     pthread_mutex_unlock(&mutexFilaDeEspera);
@@ -310,6 +325,7 @@ void FilaDeEspera(struct pessoa *people) {
                     */
                     if (waitTime1 > people->tempoMaxEsperaP) //se tempo que a pessoa vai esperar é maior que o tempo maximo que ele deseja esperar, esta desiste
                     {
+                        sem_post(&semaforoDiscoteca);
                         people->desistiu = TRUE;
                         pthread_mutex_lock(&mutexFilaDeEspera);
                         filas1.nPessoasEspera--;
@@ -319,45 +335,44 @@ void FilaDeEspera(struct pessoa *people) {
                         free(tipoDePessoa);
                         enviaInformacao(sockfd, people->id, timestamp, 1, 1, people->zona); 
                     }
-                    else if (zona_A.nPessoas == config.tamanhoMaxZonaA || zona_B.nPessoas == config.tamanhoMaxZonaB || padaria.nPessoas == config.tamanhoMaxPadaria) {
-                        if (people->zona == ZONA_A) {
-                            people->zona == randomNumber(ZONA_B, PADARIA);
+                    else {
+                        if (semZonaA == config.tamanhoMaxZonaA) {
+                            printf("!! Zona A cheia! Esperando por uma vaga... !! \n");
+                            sem_wait(&semaforoZonaA);
                         }
-                        if (people->zona == ZONA_B) {
-                            people->zona == ZONA_A;
+                        else if (semZonaB == config.tamanhoMaxZonaB) {
+                            printf("!! Zona B cheia! Esperando por uma vaga... !! \n");
+                            sem_wait(&semaforoZonaB);
                         }
-                        if (people->zona == PADARIA) {
-                            people->zona == randomNumber(ZONA_A, ZONA_B);
+                        else if (semPadaria == config.tamanhoMaxPadaria) {
+                            printf("!! Padaria cheia! Esperando por uma vaga... !! \n");
+                            sem_wait(&semaforoPadaria);
                         }
+                        else 
+                        {
+                            sem_wait(&semaforoDiscoteca);
+                            pthread_mutex_lock(&mutexFilaDeEspera);
+                            filas1.nPessoasEspera--;
+                            pthread_mutex_unlock(&mutexFilaDeEspera);
+                            tipoDePessoa = defineTipoPessoa(people);
+                            zonaP = defineZona(people);
+                            if (people->zona == ZONA_A) {
+                                sem_post(&semaforoZonaA);
+                            }
+                            if (people->zona == ZONA_B) {
+                                sem_post(&semaforoZonaB);
+                            }
+                            if (people->zona == PADARIA) {
+                                sem_post(&semaforoPadaria);
+                            }
+                            printf(GREEN "%s entrou na discoteca e %s \n" STOP, tipoDePessoa, zonaP);
+                            free(tipoDePessoa);
+                            free(zonaP);
+                            enviaInformacao(sockfd, people->id, timestamp, 2, 1, people->zona);
+                            people->estado = ENTROU;
+                        }    
                     }
-                    else //senao ela entra na discoteca.
-                    {
-                        pthread_mutex_lock(&mutexFilaDeEspera);
-                        filas1.nPessoasEspera--;
-                        pthread_mutex_unlock(&mutexFilaDeEspera);
-                        tipoDePessoa = defineTipoPessoa(people);
-                        zonaP = defineZona(people);
-                        if (people->zona == ZONA_A) {
-                            pthread_mutex_lock(&mutexPessoasDisco);
-                            zona_A.nPessoas++;
-                            pthread_mutex_unlock(&mutexPessoasDisco);
-                        }
-                        if (people->zona == ZONA_B) {
-                            pthread_mutex_lock(&mutexPessoasDisco);
-                            zona_B.nPessoas++;
-                            pthread_mutex_unlock(&mutexPessoasDisco);
-                        }
-                        if (people->zona == PADARIA) {
-                            pthread_mutex_lock(&mutexPessoasDisco);
-                            padaria.nPessoas++;
-                            pthread_mutex_unlock(&mutexPessoasDisco);
-                        }
-                        printf(GREEN "%s entrou na discoteca e %s \n" STOP, tipoDePessoa, zonaP);
-                        free(tipoDePessoa);
-                        free(zonaP);
-                        enviaInformacao(sockfd, people->id, timestamp, 2, 1, people->zona);
-                        people->estado = ENTROU;
-                    }
+                    
                 }
             }
             else {
@@ -365,7 +380,6 @@ void FilaDeEspera(struct pessoa *people) {
                 people->desistiu = TRUE; 
             }
         }
-        sem_post(&semaforoDiscoteca);
     }
     
     if (people->fila == 2) {
@@ -451,36 +465,33 @@ void Pessoa(void *ptr) {
         FilaDeEspera(&people);
         if (people.desistiu == FALSE) {
             if (people.estado == ENTROU) {
+                //sleep(config.tamanhoMaxZonaA);
                 if (probabilidade(config.probEntrarComa) == 1) {
-                    sem_wait(&semaforoDiscoteca);
+                    sem_post(&semaforoDiscoteca); 
                     people.estado == COMA;
                     printf(RED "A pessoa com o id %d bebeu demasiado e entrou em coma. \n" STOP, people.id);
                     enviaInformacao(sockfd, people.id, timestamp, 3, 1, people.zona);
                     printf( BLUE "A pessoa com o id %d está a levar soro para curar do coma alcoolico. \n" STOP, people.id);
-                    usleep(config.tempoLevarSoro);
-                    sem_post(&semaforoDiscoteca); 
+                    sleep(config.tempoLevarSoro);
 
                     if (probabilidade(config.probMorrerComa) == 1){
-                        sem_wait(&semaforoDiscoteca);
+                        sem_post(&semaforoDiscoteca);
                         printf( WHITE "A pessoa com o id %d não aguentou e infelizmente morreu. \n" STOP, people.id);
                         enviaInformacao(sockfd, people.id, timestamp, 6, 1, people.zona);
-                        sem_post(&semaforoDiscoteca);
                         break;
                     }
                     else {
-                        sem_wait(&semaforoDiscoteca);
+                        sem_post(&semaforoDiscoteca);
                         printf( WHITE "A pessoa com o id %d felizmente aguentou o tratamento e sobreviveu. \n" STOP, people.id);
                         enviaInformacao(sockfd, people.id, timestamp, 5, 1, people.zona);
-                        sem_post(&semaforoDiscoteca);
                         break;
                     }     
                 }
                 else {
-                    sem_wait(&semaforoDiscoteca);
+                    sem_post(&semaforoDiscoteca);
                     printf(PURPLE "A pessoa com o id %d cansou-se e saiu da discoteca. \n" STOP, people.id);
                     people.desistiu == TRUE;
                     enviaInformacao(sockfd, people.id, timestamp, 1, 3, people.zona);
-                    sem_post(&semaforoDiscoteca);
                 } 
                 
             }
@@ -488,37 +499,8 @@ void Pessoa(void *ptr) {
         } 
         else {
             break;
-        }
-        
+        }    
     }
-    /*
-    if (pessoa.estadoTeste == POSITIVO) {
-        pessoa.numeroDiasDesdePositivo = 0;
-        if (pessoa.vip ||
-            probabilidade(
-                configuracao
-                    .probabilidadeNaoIdosoPrecisaHospital)) { // Vai para o Hospital
-        pessoa.estado = HOSPITAL;
-        printf(CYAN
-                "A pessoa com id %d foi transportada para o hospital.\n" STOP,
-                pessoa.id);
-        sprintf(mensagem, "%d-%d-%d-%d", pessoa.id, "Z", 4, "Z");
-        enviarInformacao(mensagem);
-        pthread_mutex_lock(&mutexVariaveisHospital);
-        if (numeroPacientesNoHospital < config.tamanhoHospital) {
-            numeroPacientesNoHospital++;
-            sem_post(&semaforoMedicos);
-            IDsDoentesNoHospital[indexArraysIDS] = pessoa.id;
-            pthread_mutex_unlock(&mutexVariaveisHospital);
-            sem_wait(&semaforoDoentes);
-            pthread_mutex_lock(&mutexVariaveisHospital);
-        }
-        pthread_mutex_unlock(&mutexVariaveisHospital);
-        }
-        // printf("PRESEMAFORO\n");
-        sem_wait(&pessoa.semaforoPessoa);
-        // printf("POSSEMAFORO\n");
-    }*/
 }
 
 
@@ -582,6 +564,7 @@ int readConfiguracao(char ficheiro[]) {     //funcao para ler a configuracao
         printf( "Tamanho Max Zona A: %d \n", config.tamanhoMaxZonaA);	
         printf( "Tamanho Max Zona B: %d \n", config.tamanhoMaxZonaB);	
         printf( "Tamanho Max Padaria: %d \n", config.tamanhoMaxPadaria);
+        printf( "tempo Levar Soro: %d \n", config.tempoLevarSoro);
         printf( "Prob ser vip: %f \n", config.probSerVIP);
         printf( "Prob desistir: %f \n", config.probDesistir);
         printf( "Prob entrar em coma: %f \n", config.probEntrarComa);
@@ -611,10 +594,11 @@ int simulacao(char* configFile) {
             pthread_mutex_lock(&mutexVariaveisSimulacao);          
         }
         usleep(10000);
+        if (config.tempoLimiteSimulacao == tempoDecorrido) {
+            enviaInformacao(sockfd, 0, 0, 99, 0, 0); 
+        }
     }
-    if (config.tempoLimiteSimulacao == tempoDecorrido) {
-        enviaInformacao(sockfd, 0, 0, 99, 0, 0); 
-    }
+    
 }
 
 
@@ -630,6 +614,9 @@ void semaforosTrincos() {
         printf("Inicializacao do trinco falhou.\n");
     }
     sem_init(&semaforoDiscoteca, 0, config.tamanhoDiscoteca);
+    sem_init(&semaforoZonaA, 0, config.tamanhoMaxZonaA);
+    sem_init(&semaforoZonaB, 0, config.tamanhoMaxZonaB);
+    sem_init(&semaforoPadaria, 0, config.tamanhoMaxPadaria);
     sem_init(&semaforoEnviaInformacao, 0, 1);
 }
 

@@ -1,13 +1,13 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Estado atual => Simulacao a decorrer!
 	 DIA 0
-Pessoas (total): 32
+Pessoas (total): -98
 Pessoas a espera na fila 1: 0
 Pessoas a espera na fila 2: 0
-Pessoas na zona A: 4
-Pessoas na zona B: 7
-Pessoas na Padaria: 7
-Pessoas em coma: 8
-Pessoas que morreram de coma: 2
-Pessoas que sobreviveram de coma: 4
+Pessoas na zona A: -101
+Pessoas na zona B: 0
+Pessoas na Padaria: 0
+Pessoas em coma: 3
+Pessoas que morreram de coma: 0
+Pessoas que sobreviveram de coma: 0
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
