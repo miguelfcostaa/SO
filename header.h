@@ -73,6 +73,7 @@ struct configuracao {
     float probEntrarComa;
     float probMorrerComa;
     float probIrComer;
+    float probMudarZona;
 };
 
 struct pessoa {
@@ -94,6 +95,7 @@ struct pessoa {
 
 struct Fila1 {
     int nPessoasEspera;
+    int nVagas;
 };
 
 struct Fila2 {
@@ -104,6 +106,11 @@ struct Fila2 {
 struct ZonaA
 {
     int nPessoas;
+    int nPessoasFila1;
+    int nPessoasFila2;
+    sem_t filaEspera1;
+    sem_t filaEspera2;
+    int nPessoasMax;
 };
 
 struct ZonaB

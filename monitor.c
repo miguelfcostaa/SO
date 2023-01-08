@@ -89,7 +89,7 @@ void recebeInformacao(int newsockfd) {
         switch (estado)
         {
             case 0: //chegou uma pessoa
-                printf("Chegou uma pessoa \n");
+                printf("Chegou uma pessoa a fila\n");
                 nPessoasTotal++;
                 if (acontecimento == 1) {
                     nPessoasFila1++;
@@ -178,7 +178,45 @@ void recebeInformacao(int newsockfd) {
                 nPessoasEmComa--;
                 nPessoasComaMorreram++;
                 break;
-
+            case 7:
+                printf("Uma pessoa mudou de zona \n");
+                if (acontecimento == ZONA_A){
+                    nPessoasZonaA--;
+                    if (zona == ZONA_A){
+                        nPessoasZonaA++;
+                    }
+                    else if (zona == ZONA_B){
+                        nPessoasZonaB++;
+                    }
+                    else if (zona == PADARIA){
+                        nPessoasPadaria++;
+                    }
+                }
+                if (acontecimento == ZONA_B){
+                    nPessoasZonaB--;
+                    if (zona == ZONA_A){
+                        nPessoasZonaA++;
+                    }
+                    else if (zona == ZONA_B){
+                        nPessoasZonaB++;
+                    }
+                    else if (zona == PADARIA){
+                        nPessoasPadaria++;
+                    }
+                }
+                if (acontecimento == PADARIA){
+                    nPessoasPadaria--;
+                    if (zona == ZONA_A){
+                        nPessoasZonaA++;
+                    }
+                    else if (zona == ZONA_B){
+                        nPessoasZonaB++;
+                    }
+                    else if (zona == PADARIA){
+                        nPessoasPadaria++;
+                    }
+                }
+                break;
             case 99:
                 printf("O tempo limite da simulacao foi atingido.\n");
                 acabouSimulacao = TRUE;
