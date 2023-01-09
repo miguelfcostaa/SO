@@ -2,8 +2,9 @@
 
 int acabouSimulacao = FALSE;
 
-int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasZonaA = 0, nPessoasZonaB = 0, nPessoasPadaria = 0, tempoMedio = 0;
-nPessoasEmComa = 0; nPessoasComaMorreram = 0; nPessoasComaSobreviveram = 0;
+int nDia = 0, nPessoasTotal = 0, nPessoasFila1 = 0, nPessoasFila2 = 0, nPessoasJam = 0, nPessoasSmokingArea = 0, nPessoasPadaria = 0, tempoMedio = 0;
+nPessoasEmComa = 0; nPessoasLevarSoro = 0; nPessoasComaMorreram = 0; nPessoasComaSobreviveram = 0; nPessoasAComer = 0; 
+nPessoasAFumar = 0;
 
 
 //<<<<<<<<<<<<<<<<<<<<<<< SOCKET >>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -89,7 +90,7 @@ void recebeInformacao(int newsockfd) {
         switch (estado)
         {
             case 0: //chegou uma pessoa
-                printf("Chegou uma pessoa a fila\n");
+                printf("Chegou uma pessoa a fila com o id %d \n", pessoaID);
                 nPessoasTotal++;
                 if (acontecimento == 1) {
                     nPessoasFila1++;
@@ -100,7 +101,7 @@ void recebeInformacao(int newsockfd) {
                 break;
 
             case 1: // uma pessoa desistiu
-                printf("Uma pessoa desistiu \n");
+                printf("Uma pessoa com id %d desistiu \n", pessoaID);
                 nPessoasTotal--;
                 if (acontecimento == 1) {
                     nPessoasFila1--;
@@ -109,11 +110,11 @@ void recebeInformacao(int newsockfd) {
                     nPessoasFila2--;
                 }
                 else if (acontecimento == 3) { //a pessoa cansou-se e foi embora
-                    if (zona == ZONA_A){
-                        nPessoasZonaA--;
+                    if (zona == JAM){
+                        nPessoasJam--;
                     }
-                    else if (zona == ZONA_B){
-                        nPessoasZonaB--;
+                    else if (zona == SMOKING_AREA){
+                        nPessoasSmokingArea--;
                     }
                     else if (zona == PADARIA){
                         nPessoasPadaria--;
@@ -123,18 +124,18 @@ void recebeInformacao(int newsockfd) {
                 break;
 
             case 2: // uma pessoa entrou na discoteca
-                printf("Uma pessoa entrou na discoteca \n");
+                printf("Uma pessoa com o id %d entrou na discoteca \n", pessoaID);
                 if (acontecimento == 1) {
                     nPessoasFila1--;
                 } 
                 else if (acontecimento == 2) {
                     nPessoasFila2--;
                 }
-                if (zona == ZONA_A){
-                    nPessoasZonaA++;
+                if (zona == JAM){
+                    nPessoasJam++;
                 }
-                else if (zona == ZONA_B){
-                    nPessoasZonaB++;
+                else if (zona == SMOKING_AREA){
+                    nPessoasSmokingArea++;
                 }
                 else if (zona == PADARIA){
                     nPessoasPadaria++;
@@ -142,13 +143,13 @@ void recebeInformacao(int newsockfd) {
                 break;
 
             case 3: //uma pessoa entrou em coma
-                printf("Uma pessoa entrou em coma \n");
+                printf("Uma pessoa com o id %d entrou em coma \n", pessoaID);
                 nPessoasEmComa++;
-                if (zona == ZONA_A){
-                    nPessoasZonaA--;
+                if (zona == JAM){
+                    nPessoasJam--;
                 }
-                else if (zona == ZONA_B){
-                    nPessoasZonaB--;
+                else if (zona == SMOKING_AREA){
+                    nPessoasSmokingArea--;
                 }
                 else if (zona == PADARIA){
                     nPessoasPadaria--;
@@ -156,49 +157,51 @@ void recebeInformacao(int newsockfd) {
                 break;
 
             case 4: 
-                printf("Uma pessoa entrou na discoteca sem esperar \n");
+                printf("Uma pessoa com o id %d entrou na discoteca sem esperar \n", pessoaID);
                 nPessoasTotal++;
-                if (zona == ZONA_A){
-                    nPessoasZonaA++;
+                if (zona == JAM){
+                    nPessoasJam++;
                 }
-                else if (zona == ZONA_B){
-                    nPessoasZonaB++;
+                else if (zona == SMOKING_AREA){
+                    nPessoasSmokingArea++;
                 }
                 else if (zona == PADARIA){
                     nPessoasPadaria++;
                 }
                 break;
             case 5:
-                printf("Uma pessoa sobriveu a coma \n");
+                printf("Uma pessoa com o id %d sobriveu a coma \n", pessoaID);
+                nPessoasLevarSoro--;
                 nPessoasEmComa--;
                 nPessoasComaSobreviveram++;
                 break;
             case 6:
-                printf("Uma pessoa morreu \n");
+                printf("Uma pessoa com o id %d morreu \n", pessoaID);
+                nPessoasLevarSoro--;
                 nPessoasEmComa--;
                 nPessoasComaMorreram++;
                 break;
             case 7:
-                printf("Uma pessoa mudou de zona \n");
-                if (acontecimento == ZONA_A){
-                    nPessoasZonaA--;
-                    if (zona == ZONA_A){
-                        nPessoasZonaA++;
+                printf("Uma pessoa com o id %d mudou de zona \n", pessoaID);
+                if (acontecimento == JAM){
+                    nPessoasJam--;
+                    if (zona == JAM){
+                        nPessoasJam++;
                     }
-                    else if (zona == ZONA_B){
-                        nPessoasZonaB++;
+                    else if (zona == SMOKING_AREA){
+                        nPessoasSmokingArea++;
                     }
                     else if (zona == PADARIA){
                         nPessoasPadaria++;
                     }
                 }
-                if (acontecimento == ZONA_B){
-                    nPessoasZonaB--;
-                    if (zona == ZONA_A){
-                        nPessoasZonaA++;
+                if (acontecimento == SMOKING_AREA){
+                    nPessoasSmokingArea--;
+                    if (zona == JAM){
+                        nPessoasJam++;
                     }
-                    else if (zona == ZONA_B){
-                        nPessoasZonaB++;
+                    else if (zona == SMOKING_AREA){
+                        nPessoasSmokingArea++;
                     }
                     else if (zona == PADARIA){
                         nPessoasPadaria++;
@@ -206,16 +209,36 @@ void recebeInformacao(int newsockfd) {
                 }
                 if (acontecimento == PADARIA){
                     nPessoasPadaria--;
-                    if (zona == ZONA_A){
-                        nPessoasZonaA++;
+                    if (zona == JAM){
+                        nPessoasJam++;
                     }
-                    else if (zona == ZONA_B){
-                        nPessoasZonaB++;
+                    else if (zona == SMOKING_AREA){
+                        nPessoasSmokingArea++;
                     }
                     else if (zona == PADARIA){
                         nPessoasPadaria++;
                     }
                 }
+                break;
+            case 8:
+                printf("A pessoa com o id %d esta a levar soro \n", pessoaID);
+                nPessoasLevarSoro++;
+                break;
+            case 9:
+                printf("A pessoa com o id %d esta a comer \n", pessoaID);
+                nPessoasAComer++;
+                break;
+            case 10:
+                printf("A pessoa com o id %d acabou de comer \n", pessoaID);
+                nPessoasAComer--;
+                break;
+            case 11:
+                printf("A pessoa com o id %d foi fumar \n", pessoaID);
+                nPessoasAFumar++;
+                break;
+            case 12:
+                printf("A pessoa com o id %d acabou de fumar \n", pessoaID);
+                nPessoasAFumar--;
                 break;
             case 99:
                 printf("O tempo limite da simulacao foi atingido.\n");
@@ -228,26 +251,6 @@ void recebeInformacao(int newsockfd) {
     }            
 }
 
-
-
-void leituraSocket(int sockfd) {
-    int x = 0;
-    char buffer[MAXLINE];
-    while (!acabouSimulacao) {
-        x = read(sockfd, buffer, MAXLINE); // Le a mensagem do socket e guarda no buffer
-        if (x == 0) {            // Quando chega ao fim
-            printf("FIM \n");
-            break;
-        } 
-        else if (x < 0) {
-            printf("erro: nao foi possivel ler socket. \n");
-        } 
-        else {
-            printf('Mensagem recebida. \n');
-            recebeInformacao(buffer);
-        }
-    }
-}
 
 
 //>>>>>>>>>>>>>>>>>>>>>> ESCRITA E IMPRESSAO >>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -273,14 +276,17 @@ void escreveFeedback() {
 		else {
             fprintf(fp, "%s", "Estado atual => Simulacao acabou!\n");
         }
-		fprintf(fp, "\t DIA %d\n", nDia);
+		fprintf(fp, "\t \n");
 		fprintf(fp, "Pessoas (total): %d\n", nPessoasTotal);
 		fprintf(fp, "Pessoas a espera na fila 1: %d\n", nPessoasFila1);
 		fprintf(fp, "Pessoas a espera na fila 2: %d\n", nPessoasFila2);
-		fprintf(fp, "Pessoas na zona A: %d\n", nPessoasZonaA);
-		fprintf(fp, "Pessoas na zona B: %d\n", nPessoasZonaB);
+		fprintf(fp, "Pessoas no JAM: %d\n", nPessoasJam);
+		fprintf(fp, "Pessoas na area de fumar: %d\n", nPessoasSmokingArea);
+        fprintf(fp, "Pessoas a fumar: %d\n", nPessoasAFumar);
 		fprintf(fp, "Pessoas na Padaria: %d\n", nPessoasPadaria);
+        fprintf(fp, "Pessoas a comer: %d\n", nPessoasAComer);
 		fprintf(fp, "Pessoas em coma: %d\n", nPessoasEmComa);
+        fprintf(fp, "Pessoas a levar soro (max 2): %d\n", nPessoasLevarSoro);
         fprintf(fp, "Pessoas que morreram de coma: %d\n", nPessoasComaMorreram);
         fprintf(fp, "Pessoas que sobreviveram de coma: %d\n", nPessoasComaSobreviveram);
 		fprintf(fp, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -296,14 +302,17 @@ void imprimeFeedback(){
 	else {
     	printf("%s", "Estado atual => Simulacao acabou!\n");
     }
-	printf("\t DIA %d\n", nDia);
+	printf("\t \n");
 	printf("Pessoas (total): %d\n", nPessoasTotal);
 	printf("Pessoas a espera na fila 1: %d\n", nPessoasFila1);
 	printf("Pessoas a espera na fila 2: %d\n", nPessoasFila2);
-	printf("Pessoas na zona A: %d\n", nPessoasZonaA);
-	printf("Pessoas na zona B: %d\n", nPessoasZonaB);
+	printf("Pessoas no JAM: %d\n", nPessoasJam);
+	printf("Pessoas na area de fumar: %d\n", nPessoasSmokingArea);
+    printf("Pessoas a fumar: %d\n", nPessoasAFumar);
 	printf("Pessoas na Padaria: %d\n", nPessoasPadaria);
+    printf("Pessoas a comer: %d\n", nPessoasAComer);
 	printf("Pessoas em coma: %d\n", nPessoasEmComa);
+    printf("Pessoas a levar soro (max 2): %d\n", nPessoasLevarSoro);
     printf("Pessoas que morreram de coma: %d\n", nPessoasComaMorreram);
     printf("Pessoas que sobreviveram de coma: %d\n", nPessoasComaSobreviveram);	
 	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");

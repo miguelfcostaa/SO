@@ -15,7 +15,7 @@
 
 #define UNIXSTR_PATH "/tmp/s.2079120"
 #define MAXLINE 1024    //tamanho maximo do buffer
-#define SIZE_TASKS 100000
+#define SIZE_TASKS 1000000
 #define TRUE 1
 #define FALSE 0
 
@@ -33,25 +33,16 @@
 //Estado pessoa
 #define ESPERA 0
 #define ENTROU 1
-#define COMA 2
-#define MULHER 3
-#define HOMEM 4
+#define COMENDO 2
+#define COMA 3
+#define MULHER 4
+#define HOMEM 5
 
-
-//TESTE DE COMA
-#define NAO_FEZ_TESTE 0
-#define LEVANDO_SORO 1
-#define MORREU 2
-#define SOBREVIVEU 3
 
 //Zona
-#define ZONA_A 0
-#define ZONA_B 1
+#define JAM 0
+#define SMOKING_AREA 1
 #define PADARIA 2
-
-//TEMPO 
-#define MINUTO 60 //1 minuto = 60 segundos
-#define HORA 60 * 60 //1 hora = 3600 segundos
 
 
 struct configuracao {
@@ -59,20 +50,19 @@ struct configuracao {
     int tempoLimiteSimulacao;
     int tamanhoMaxFila1;
     int tamanhoMaxFila2;
-    int tamanhoMaxZonaA;
-    int tamanhoMaxZonaB;
+    int tamanhoMaxJam;
+    int tamanhoMaxSmokingArea;
     int tamanhoMaxPadaria;
     int tempoMedioChegada;
     int tempoMedioEspera;
     int tempoMaxEspera;
     int tempoLevarSoro;
+    int tempoComer;
+    int tempoFumar;
     float probSerVIP;
-    float probDesistir;
-    float probSerMulher;
-    float probSerHomem;
     float probEntrarComa;
     float probMorrerComa;
-    float probIrComer;
+    float probIr;
     float probMudarZona;
 };
 
@@ -80,64 +70,41 @@ struct pessoa {
     int id;
     int sexualidade; //MULHER - 0 | HOMEM - 1
     int fila;
-    int naFila;
     int zona; //0 - Zona A | 1 - Zona B | 2 - Padaria 
     int vip; 
-    int desistiu;
+    int desistir;
     int nPessoasAFrenteDesistir;
-    int tempoChegada;
     int tempoMaxEsperaP;
-    int tempoNaFila;
     int estado; // 0 = espera | 1 = coma
-    int teste; //0 = nao fez teste | 1 - esta a levar soro | 2 = morreu | 3 = sobreviveu
 };
 
 
 struct Fila1 {
-    int nPessoasEspera;
-    int nVagas;
+    int nPessoasFila1;
 };
 
 struct Fila2 {
-    int nPessoasNormalEspera;
-    int nPessoasPrioritariasEspera;
-};
-
-struct ZonaA
-{
-    int nPessoas;
-    int nPessoasFila1;
     int nPessoasFila2;
-    sem_t filaEspera1;
-    sem_t filaEspera2;
-    int nPessoasMax;
 };
-
-struct ZonaB
-{
-    int nPessoas;
-};
-
-struct Padaria
-{
-    int nPessoas;
-};
-
-
-
 
 
 //simulador.c
 int criaSocket();
-int readConfiguracao();
-void enviarMensagem(char *mensagemAEnviar);
+void enviaInformacao(int sockfd, int pessoa_id, int tempoMedido, int estado, int acontecimento, int zona);
 int probabilidade (float valor);
 int randomNumber(int max, int min);
+char *defineTipoPessoa(struct pessoa *people);
+struct pessoa criaPessoa();
+void FilaDeEspera(struct pessoa *people);
+void Pessoa(void *ptr);
+int readConfiguracao(char ficheiro[]);
+int simulacao(char* configFile);
+void semaforosTrincos();
 
 
 //monitor.c
 void socketservidor();
-void leituraSocket(int sockfd);
+void recebeInformacao(int newsockfd);
 void limpaFeedback();
 void escreveFeedback();
 void imprimeFeedback();
